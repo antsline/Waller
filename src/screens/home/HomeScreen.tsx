@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   SafeAreaView,
+  ViewToken,
 } from 'react-native';
 import { MainTabScreenProps } from '../../types/navigation';
 import { useFeed } from '../../hooks/useFeed';
@@ -17,10 +18,40 @@ type Props = MainTabScreenProps<'Home'>;
 
 export function HomeScreen({ navigation }: Props) {
   const { posts, loading, refreshing, hasMore, handleRefresh, loadMore } = useFeed();
+  const [activePostId, setActivePostId] = useState<string | null>(null);
+
+  // 表示中の投稿を検出するコールバック
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      if (viewableItems.length > 0) {
+        // 最も画面中央に近い投稿を探す
+        const centerItem = viewableItems.reduce((closest, current) => {
+          if (!current.item || !closest.item) return current;
+
+          const currentVisibility = current.itemVisiblePercentThreshold || 0;
+          const closestVisibility = closest.itemVisiblePercentThreshold || 0;
+
+          return currentVisibility > closestVisibility ? current : closest;
+        });
+
+        if (centerItem.item) {
+          setActivePostId((centerItem.item as FeedPost).id);
+        }
+      } else {
+        setActivePostId(null);
+      }
+    }
+  ).current;
+
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 50, // 50%以上表示されていると判定
+    minimumViewTime: 100, // 100ms以上表示されていると判定
+  }).current;
 
   const renderItem = ({ item }: { item: FeedPost }) => (
     <PostCard
       post={item}
+      isActive={activePostId === item.id}
       onPress={() => {
         // TODO: 投稿詳細画面への遷移
         console.log('Post pressed:', item.id);
@@ -100,6 +131,8 @@ export function HomeScreen({ navigation }: Props) {
             ListFooterComponent={renderFooter}
             ListEmptyComponent={renderEmpty}
             showsVerticalScrollIndicator={false}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
           />
         )}
       </View>
@@ -139,7 +172,7 @@ const styles = StyleSheet.create({
   // リスト
   listContent: {
     paddingTop: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     paddingBottom: 24,
   },
 
