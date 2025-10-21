@@ -7,6 +7,7 @@ import {
   Dimensions,
   SafeAreaView,
   StatusBar,
+  Text,
 } from 'react-native';
 import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,7 +22,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export function VideoModal({ visible, videoUrl, onClose }: VideoModalProps) {
   const videoRef = useRef<Video>(null);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false); // 最初は一時停止
 
   const handlePlayPause = async () => {
     if (!videoRef.current) return;
@@ -57,12 +58,10 @@ export function VideoModal({ visible, videoUrl, onClose }: VideoModalProps) {
     onClose();
   };
 
-  // モーダルが開いた時に自動再生を開始
+  // モーダルが開いた時の処理
   const handleModalShow = () => {
-    setIsPlaying(true);
-    if (videoRef.current) {
-      videoRef.current.playAsync();
-    }
+    // 最初は一時停止状態（ユーザーがタップして再生）
+    setIsPlaying(false);
   };
 
   return (
@@ -95,16 +94,27 @@ export function VideoModal({ visible, videoUrl, onClose }: VideoModalProps) {
             source={{ uri: videoUrl }}
             style={styles.video}
             resizeMode={ResizeMode.CONTAIN}
-            shouldPlay={true}
+            shouldPlay={false} // 手動再生
             isLooping={true}
             isMuted={false} // 全画面では音声ON
             onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
+            useNativeControls={false}
           />
 
           {/* 再生/一時停止アイコン */}
+          <View style={styles.playIconContainer}>
+            <Ionicons
+              name={isPlaying ? 'pause-circle' : 'play-circle'}
+              size={80}
+              color="rgba(255, 255, 255, 0.9)"
+            />
+          </View>
+
+          {/* 音声ONの案内 */}
           {!isPlaying && (
-            <View style={styles.playIconContainer}>
-              <Ionicons name="play-circle" size={80} color="rgba(255, 255, 255, 0.9)" />
+            <View style={styles.audioHint}>
+              <Ionicons name="volume-high" size={20} color="#fff" />
+              <Text style={styles.audioHintText}>タップして音声付きで再生</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -147,5 +157,26 @@ const styles = StyleSheet.create({
     left: '50%',
     marginTop: -40,
     marginLeft: -40,
+    opacity: 0.8,
+  },
+  audioHint: {
+    position: 'absolute',
+    bottom: 100,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    alignSelf: 'center',
+  },
+  audioHintText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

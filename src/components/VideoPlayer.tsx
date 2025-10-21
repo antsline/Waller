@@ -131,23 +131,6 @@ export function VideoPlayer({
         onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
       />
 
-      {/* 音声ON/OFFボタン */}
-      {isPlaying && (
-        <TouchableOpacity
-          style={styles.muteButton}
-          onPress={handleMuteToggle}
-          activeOpacity={0.8}
-        >
-          <View style={styles.muteButtonCircle}>
-            <Ionicons
-              name={isMuted ? 'volume-mute' : 'volume-high'}
-              size={20}
-              color="#fff"
-            />
-          </View>
-        </TouchableOpacity>
-      )}
-
       {/* 再生アイコン（一時停止時のみ） */}
       {!isPlaying && !showThumbnail && (
         <View style={styles.playIconContainer}>
@@ -185,19 +168,5 @@ const styles = StyleSheet.create({
     marginTop: -30,
     marginLeft: -30,
     zIndex: 2,
-  },
-  muteButton: {
-    position: 'absolute',
-    bottom: 12,
-    right: 12,
-    zIndex: 3,
-  },
-  muteButtonCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
