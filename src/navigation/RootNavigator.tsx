@@ -10,10 +10,18 @@ import { RootStackParamList } from '../types/navigation';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, isProfileComplete, loading, userRole } = useAuth();
+
+  console.log('🗺️ RootNavigator render:', {
+    loading,
+    isAuthenticated,
+    isProfileComplete,
+    userRole,
+  });
 
   // ローディング中
   if (loading) {
+    console.log('⏳ Showing loading screen');
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FF6B00" />
@@ -21,12 +29,21 @@ export function RootNavigator() {
     );
   }
 
+  const shouldShowMain = isAuthenticated && isProfileComplete;
+  console.log('🎯 Navigation decision:', shouldShowMain ? 'Main' : 'Auth');
+
+  // 認証状態が変わったらNavigatorを再マウント
+  const navigationKey = `root-${shouldShowMain ? 'main' : 'auth'}-${userRole || 'none'}`;
+  console.log('🔑 Navigation key:', navigationKey);
+
   return (
-    <NavigationContainer>
+    <NavigationContainer key={navigationKey}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {isAuthenticated ? (
+        {shouldShowMain ? (
+          // 認証済み & プロフィール完了 → メインアプリ
           <Stack.Screen name="Main" component={MainTabs} />
         ) : (
+          // 未認証 or プロフィール未完了 → 認証フロー
           <Stack.Screen name="Auth" component={AuthStack} />
         )}
       </Stack.Navigator>

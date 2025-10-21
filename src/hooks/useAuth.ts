@@ -7,6 +7,8 @@ export interface AuthState {
   session: Session | null;
   loading: boolean;
   isAuthenticated: boolean;
+  isProfileComplete: boolean;
+  userRole: 'player' | 'fan' | null;
 }
 
 export function useAuth() {
@@ -15,16 +17,60 @@ export function useAuth() {
     session: null,
     loading: true,
     isAuthenticated: false,
+    isProfileComplete: false,
+    userRole: null,
   });
+
+  // プロフィール設定完了状態をチェック
+  const checkProfileComplete = async (
+    userId: string
+  ): Promise<{ isComplete: boolean; role: 'player' | 'fan' | null }> => {
+    try {
+      console.log('🔍 Checking profile completion for user:', userId);
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('role, username, display_name')
+        .eq('id', userId)
+        .single();
+
+      if (error || !data) {
+        console.warn('❌ Failed to fetch user profile:', error);
+        return { isComplete: false, role: null };
+      }
+
+      console.log('📊 Profile data:', {
+        role: data.role,
+        username: data.username,
+        display_name: data.display_name,
+      });
+
+      // role, username, display_name が全て設定されていればプロフィール完了
+      const isComplete = !!(data.role && data.username && data.display_name);
+      const result = { isComplete, role: data.role as 'player' | 'fan' | null };
+
+      console.log('✅ Profile check result:', result);
+      return result;
+    } catch (error) {
+      console.warn('❌ Error checking profile completion:', error);
+      return { isComplete: false, role: null };
+    }
+  };
 
   useEffect(() => {
     // 初回セッション取得
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      const profileStatus = session?.user
+        ? await checkProfileComplete(session.user.id)
+        : { isComplete: false, role: null };
+
       setAuthState({
         user: session?.user ?? null,
         session,
         loading: false,
         isAuthenticated: !!session,
+        isProfileComplete: profileStatus.isComplete,
+        userRole: profileStatus.role,
       });
 
       // last_login_at更新
@@ -36,13 +82,29 @@ export function useAuth() {
     // 認証状態の変更を監視
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthState({
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔐 Auth state changed:', event, 'hasSession:', !!session);
+
+      const profileStatus = session?.user
+        ? await checkProfileComplete(session.user.id)
+        : { isComplete: false, role: null };
+
+      const newAuthState = {
         user: session?.user ?? null,
         session,
         loading: false,
         isAuthenticated: !!session,
+        isProfileComplete: profileStatus.isComplete,
+        userRole: profileStatus.role,
+      };
+
+      console.log('📱 Setting auth state:', {
+        isAuthenticated: newAuthState.isAuthenticated,
+        isProfileComplete: newAuthState.isProfileComplete,
+        userRole: newAuthState.userRole,
       });
+
+      setAuthState(newAuthState);
 
       // ログイン時にlast_login_at更新
       if (session?.user) {
@@ -104,14 +166,22 @@ export function useAuth() {
   // 開発用：メール認証
   const signInWithEmail = async (email: string, password: string) => {
     try {
+      console.log('🔑 Attempting signin with email:', email);
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Signin error from Supabase:', error);
+        throw error;
+      }
+
+      console.log('✅ Signin successful');
       return data;
     } catch (error) {
+      console.error('❌ Signin exception:', error);
       throw error;
     }
   };
@@ -119,14 +189,27 @@ export function useAuth() {
   // 開発用：メールサインアップ
   const signUpWithEmail = async (email: string, password: string) => {
     try {
+      console.log('📝 Attempting signup with email:', email);
+      console.log('🔐 Password length:', password.length);
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Signup error from Supabase:', error);
+        throw error;
+      }
+
+      console.log('✅ Signup successful:', data);
       return data;
     } catch (error) {
+      console.error('❌ Signup exception:', error);
+      if (error instanceof Error) {
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+      }
       throw error;
     }
   };
@@ -141,6 +224,33 @@ export function useAuth() {
     }
   };
 
+  // プロフィール状態を手動で再チェック（プロフィール登録完了後に使用）
+  const refetchProfile = async () => {
+    console.log('🔄 Manual profile refetch triggered');
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session?.user) {
+      console.log('❌ No session found for refetch');
+      return;
+    }
+
+    const profileStatus = await checkProfileComplete(session.user.id);
+
+    const newState = {
+      user: session.user,
+      session,
+      loading: false,
+      isAuthenticated: true,
+      isProfileComplete: profileStatus.isComplete,
+      userRole: profileStatus.role,
+    };
+
+    console.log('🔄 Setting new auth state:', newState);
+    setAuthState(newState);
+
+    console.log('✅ Profile refetch complete:', profileStatus);
+  };
+
   return {
     ...authState,
     signInWithGoogle,
@@ -148,5 +258,6 @@ export function useAuth() {
     signInWithEmail,
     signUpWithEmail,
     signOut,
+    refetchProfile,
   };
 }

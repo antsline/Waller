@@ -1,26 +1,54 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { AuthStackScreenProps } from '../../types/navigation';
+import { useAuth } from '../../hooks/useAuth';
+import { supabase } from '../../services/supabase';
 
 type Props = AuthStackScreenProps<'RoleSelection'>;
 
 export function RoleSelectionScreen({ navigation }: Props) {
+  const { user } = useAuth();
   const [selectedRole, setSelectedRole] = useState<'player' | 'fan' | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleNext = () => {
-    if (!selectedRole) return;
+  const handleNext = async () => {
+    if (!selectedRole || !user) return;
 
-    if (selectedRole === 'player') {
-      navigation.navigate('PlayerProfileSetup');
-    } else {
-      navigation.navigate('FanProfileSetup');
+    setIsSubmitting(true);
+
+    try {
+      console.log('📝 ロール保存開始:', selectedRole);
+
+      // usersテーブルにroleを保存
+      const { error } = await supabase
+        .from('users')
+        .update({ role: selectedRole })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Role update error:', error);
+        throw new Error('ロールの保存に失敗しました');
+      }
+
+      console.log('✅ ロール保存完了');
+
+      // プロフィール設定画面に遷移
+      if (selectedRole === 'player') {
+        navigation.navigate('PlayerProfileSetup');
+      } else {
+        navigation.navigate('FanProfileSetup');
+      }
+    } catch (error: any) {
+      console.error('ロール保存エラー:', error);
+      Alert.alert('エラー', error.message || 'ロールの保存に失敗しました');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>あなたの立場を選択してください</Text>
-      <Text style={styles.subtitle}>後から変更はできません</Text>
 
       <View style={styles.roleContainer}>
         <TouchableOpacity
@@ -51,11 +79,15 @@ export function RoleSelectionScreen({ navigation }: Props) {
       </View>
 
       <TouchableOpacity
-        style={[styles.nextButton, !selectedRole && styles.nextButtonDisabled]}
+        style={[styles.nextButton, (!selectedRole || isSubmitting) && styles.nextButtonDisabled]}
         onPress={handleNext}
-        disabled={!selectedRole}
+        disabled={!selectedRole || isSubmitting}
       >
-        <Text style={styles.nextButtonText}>次へ</Text>
+        {isSubmitting ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.nextButtonText}>次へ</Text>
+        )}
       </TouchableOpacity>
     </View>
   );
