@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLike } from '../hooks/useLike';
 import { useReaction, ReactionType } from '../hooks/useReaction';
@@ -49,28 +49,40 @@ export function ReactionButtons({
       // 同じスタンプをもう一度押したら削除はしない（仕様上、削除ボタンは別途必要な場合のみ）
       return;
     }
+
+    // クールダウン中の場合、メッセージを表示
+    if (!canChange && currentReaction) {
+      Alert.alert(
+        'スタンプ変更のクールダウン中',
+        `スタンプの変更は${cooldownRemaining}秒後に可能です。\n\n送信後10分以内は自由に変更できます。`,
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     sendReaction(type);
   };
 
   return (
     <View style={styles.container}>
-      {/* いいねボタン */}
-      <TouchableOpacity
-        style={styles.likeButton}
-        onPress={toggleLike}
-        disabled={likeLoading}
-        activeOpacity={0.7}
-      >
-        <Ionicons
-          name={isLiked ? 'heart' : 'heart-outline'}
-          size={24}
-          color={isLiked ? '#F44336' : '#9E9E9E'}
-        />
-        {likeCount > 0 && <Text style={styles.count}>{likeCount}</Text>}
-      </TouchableOpacity>
+      {/* リアクションボタン（横並び一列） */}
+      <View style={styles.reactionsRow}>
+        {/* いいねボタン */}
+        <TouchableOpacity
+          style={styles.likeButton}
+          onPress={toggleLike}
+          disabled={likeLoading}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name={isLiked ? 'heart' : 'heart-outline'}
+            size={22}
+            color={isLiked ? '#F44336' : '#9E9E9E'}
+          />
+          <Text style={[styles.count, isLiked && styles.countActive]}>{likeCount}</Text>
+        </TouchableOpacity>
 
-      {/* スタンプボタン */}
-      <View style={styles.reactionButtons}>
+        {/* スタンプボタン */}
         {REACTIONS.map((reaction) => {
           const isSelected = currentReaction === reaction.type;
           const count = reactionCounts[reaction.type];
@@ -81,29 +93,26 @@ export function ReactionButtons({
               style={[
                 styles.reactionButton,
                 isSelected && styles.reactionButtonSelected,
-                !canChange && isSelected && styles.reactionButtonCooldown,
               ]}
               onPress={() => handleReactionPress(reaction.type)}
-              disabled={reactionLoading || (!canChange && !isSelected)}
+              disabled={reactionLoading}
               activeOpacity={0.7}
             >
               <Text style={styles.reactionEmoji}>{reaction.emoji}</Text>
-              {count > 0 && (
-                <Text style={[styles.count, isSelected && styles.countSelected]}>
-                  {count}
-                </Text>
-              )}
+              <Text style={[styles.count, isSelected && styles.countSelected]}>
+                {count}
+              </Text>
             </TouchableOpacity>
           );
         })}
       </View>
 
-      {/* クールダウン表示 */}
+      {/* クールダウン表示（小さめに） */}
       {cooldownRemaining > 0 && (
         <View style={styles.cooldownContainer}>
-          <Ionicons name="time-outline" size={14} color="#FF6B00" />
+          <Ionicons name="time-outline" size={12} color="#FF6B00" />
           <Text style={styles.cooldownText}>
-            スタンプの変更は{cooldownRemaining}秒後に可能です
+            変更は{cooldownRemaining}秒後に可能
           </Text>
         </View>
       )}
@@ -115,27 +124,31 @@ const styles = StyleSheet.create({
   container: {
     paddingVertical: 8,
   },
+  reactionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   likeButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    gap: 6,
-  },
-  reactionButtons: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingTop: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 16,
+    backgroundColor: '#F5F5F5',
+    gap: 4,
+    minWidth: 50,
+    justifyContent: 'center',
   },
   reactionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     borderRadius: 16,
     backgroundColor: '#F5F5F5',
-    gap: 4,
-    minWidth: 50,
+    gap: 3,
+    minWidth: 48,
     justifyContent: 'center',
   },
   reactionButtonSelected: {
@@ -143,16 +156,16 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#FF6B00',
   },
-  reactionButtonCooldown: {
-    opacity: 0.6,
-  },
   reactionEmoji: {
-    fontSize: 18,
+    fontSize: 16,
   },
   count: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#616161',
+    color: '#9E9E9E',
+  },
+  countActive: {
+    color: '#F44336',
   },
   countSelected: {
     color: '#FF6B00',
@@ -160,15 +173,16 @@ const styles = StyleSheet.create({
   cooldownContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    marginTop: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
     backgroundColor: '#FFF3E0',
-    borderRadius: 8,
-    gap: 6,
+    borderRadius: 6,
+    gap: 4,
+    alignSelf: 'flex-start',
   },
   cooldownText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#E65100',
     fontWeight: '500',
   },
