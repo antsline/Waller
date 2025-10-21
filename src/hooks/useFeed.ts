@@ -130,6 +130,48 @@ export function useFeed() {
     fetchFeed(0);
   }, []);
 
+  // リアルタイム更新（post_countersの変更を監視）
+  useEffect(() => {
+    const subscription = supabase
+      .channel('post_counters_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'post_counters',
+        },
+        (payload) => {
+          console.log('📊 Counter update:', payload);
+
+          // 該当する投稿のカウンターを更新
+          setPosts((currentPosts) =>
+            currentPosts.map((post) => {
+              if (post.id === payload.new.post_id) {
+                return {
+                  ...post,
+                  counters: {
+                    post_id: payload.new.post_id,
+                    like_count: payload.new.like_count,
+                    reaction_fire_count: payload.new.reaction_fire_count,
+                    reaction_clap_count: payload.new.reaction_clap_count,
+                    reaction_sparkle_count: payload.new.reaction_sparkle_count,
+                    reaction_muscle_count: payload.new.reaction_muscle_count,
+                  },
+                };
+              }
+              return post;
+            })
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   // Pull to Refresh
   const handleRefresh = () => {
     fetchFeed(0, true);

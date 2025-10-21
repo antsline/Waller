@@ -37,45 +37,13 @@ export function ReactionButtons({
     canChange,
   } = useReaction(postId);
 
-  // ローカル状態でカウントを管理（楽観的更新用）
-  const [localLikeCount, setLocalLikeCount] = useState(likeCount);
-  const [localReactionCounts, setLocalReactionCounts] = useState({
-    fire: fireCount,
-    clap: clapCount,
-    sparkle: sparkleCount,
-    muscle: muscleCount,
-  });
-
-  // propsが変更されたら同期
-  useEffect(() => {
-    setLocalLikeCount(likeCount);
-  }, [likeCount]);
-
-  useEffect(() => {
-    setLocalReactionCounts({
-      fire: fireCount,
-      clap: clapCount,
-      sparkle: sparkleCount,
-      muscle: muscleCount,
-    });
-  }, [fireCount, clapCount, sparkleCount, muscleCount]);
-
   const handleLikePress = async () => {
-    // 楽観的更新: カウントを即座に更新
-    const previousCount = localLikeCount;
-    setLocalLikeCount(isLiked ? previousCount - 1 : previousCount + 1);
-
-    try {
-      await toggleLike();
-    } catch (error) {
-      // エラー時はロールバック
-      setLocalLikeCount(previousCount);
-    }
+    await toggleLike();
   };
 
   const handleReactionPress = async (type: ReactionType) => {
     if (currentReaction === type) {
-      // 同じスタンプをもう一度押したら削除はしない（仕様上、削除ボタンは別途必要な場合のみ）
+      // 同じスタンプをもう一度押したら削除はしない
       return;
     }
 
@@ -89,28 +57,7 @@ export function ReactionButtons({
       return;
     }
 
-    // 楽観的更新: カウントを即座に更新
-    const previousCounts = { ...localReactionCounts };
-    setLocalReactionCounts((prev) => {
-      const newCounts = { ...prev };
-
-      // 既存のリアクションがあれば-1
-      if (currentReaction) {
-        newCounts[currentReaction] = Math.max(0, newCounts[currentReaction] - 1);
-      }
-
-      // 新しいリアクションに+1
-      newCounts[type] = newCounts[type] + 1;
-
-      return newCounts;
-    });
-
-    try {
-      await sendReaction(type);
-    } catch (error) {
-      // エラー時はロールバック
-      setLocalReactionCounts(previousCounts);
-    }
+    await sendReaction(type);
   };
 
   return (
@@ -129,13 +76,20 @@ export function ReactionButtons({
             size={22}
             color={isLiked ? '#F44336' : '#9E9E9E'}
           />
-          <Text style={[styles.count, isLiked && styles.countActive]}>{localLikeCount}</Text>
+          <Text style={[styles.count, isLiked && styles.countActive]}>{likeCount}</Text>
         </TouchableOpacity>
 
         {/* スタンプボタン */}
         {REACTIONS.map((reaction) => {
           const isSelected = currentReaction === reaction.type;
-          const count = localReactionCounts[reaction.type];
+          const count =
+            reaction.type === 'fire'
+              ? fireCount
+              : reaction.type === 'clap'
+              ? clapCount
+              : reaction.type === 'sparkle'
+              ? sparkleCount
+              : muscleCount;
 
           return (
             <TouchableOpacity
