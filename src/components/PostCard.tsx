@@ -5,22 +5,24 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { FeedPost, CATEGORY_LABELS, SKILL_LEVEL_LABELS } from '../types/feed.types';
 import { VideoPlayer } from './VideoPlayer';
+import { VideoModal } from './VideoModal';
+import { ReactionButtons } from './ReactionButtons';
 
 interface PostCardProps {
   post: FeedPost;
   onPress?: () => void;
   onUserPress?: () => void;
+  isActive?: boolean; // 画面中央に表示されているか（自動再生用）
 }
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-
-export function PostCard({ post, onPress, onUserPress }: PostCardProps) {
+export function PostCard({ post, onPress, onUserPress, isActive = false }: PostCardProps) {
   const [showFullCaption, setShowFullCaption] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
 
   const categoryInfo = post.category_tag ? CATEGORY_LABELS[post.category_tag] : null;
 
@@ -91,9 +93,10 @@ export function PostCard({ post, onPress, onUserPress }: PostCardProps) {
         <VideoPlayer
           videoUrl={post.video_url}
           thumbnailUrl={post.thumbnail_url}
-          videoWidth={1080}  // TODO: 実際のサイズを保存する
-          videoHeight={1920} // TODO: 実際のサイズを保存する
-          style={styles.video}
+          isActive={isActive}
+          initialMuted={isMuted}
+          onPress={() => setShowVideoModal(true)}
+          onMuteToggle={(muted) => setIsMuted(muted)}
         />
 
         {/* カテゴリタグオーバーレイ */}
@@ -105,6 +108,13 @@ export function PostCard({ post, onPress, onUserPress }: PostCardProps) {
           </View>
         )}
       </View>
+
+      {/* 全画面動画モーダル */}
+      <VideoModal
+        visible={showVideoModal}
+        videoUrl={post.video_url}
+        onClose={() => setShowVideoModal(false)}
+      />
 
       {/* キャプション */}
       {post.caption && (
@@ -118,46 +128,16 @@ export function PostCard({ post, onPress, onUserPress }: PostCardProps) {
         </View>
       )}
 
-      {/* リアクションバー */}
-      <View style={styles.reactionBar}>
-        <View style={styles.reactionCounts}>
-          {/* いいね */}
-          <View style={styles.reactionItem}>
-            <Ionicons name="heart" size={18} color="#F44336" />
-            <Text style={styles.reactionCount}>{post.counters.like_count}</Text>
-          </View>
-
-          {/* スタンプ */}
-          {post.counters.reaction_fire_count > 0 && (
-            <View style={styles.reactionItem}>
-              <Text style={styles.reactionEmoji}>🔥</Text>
-              <Text style={styles.reactionCount}>{post.counters.reaction_fire_count}</Text>
-            </View>
-          )}
-          {post.counters.reaction_clap_count > 0 && (
-            <View style={styles.reactionItem}>
-              <Text style={styles.reactionEmoji}>👏</Text>
-              <Text style={styles.reactionCount}>{post.counters.reaction_clap_count}</Text>
-            </View>
-          )}
-          {post.counters.reaction_sparkle_count > 0 && (
-            <View style={styles.reactionItem}>
-              <Text style={styles.reactionEmoji}>✨</Text>
-              <Text style={styles.reactionCount}>{post.counters.reaction_sparkle_count}</Text>
-            </View>
-          )}
-          {post.counters.reaction_muscle_count > 0 && (
-            <View style={styles.reactionItem}>
-              <Text style={styles.reactionEmoji}>💪</Text>
-              <Text style={styles.reactionCount}>{post.counters.reaction_muscle_count}</Text>
-            </View>
-          )}
-        </View>
-
-        {/* メニューボタン */}
-        <TouchableOpacity style={styles.menuButton}>
-          <Ionicons name="ellipsis-horizontal" size={20} color="#9E9E9E" />
-        </TouchableOpacity>
+      {/* リアクションボタン */}
+      <View style={styles.reactionsContainer}>
+        <ReactionButtons
+          postId={post.id}
+          likeCount={post.counters.like_count}
+          fireCount={post.counters.reaction_fire_count}
+          clapCount={post.counters.reaction_clap_count}
+          sparkleCount={post.counters.reaction_sparkle_count}
+          muscleCount={post.counters.reaction_muscle_count}
+        />
       </View>
     </View>
   );
@@ -166,7 +146,7 @@ export function PostCard({ post, onPress, onUserPress }: PostCardProps) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    marginBottom: 12,
+    marginBottom: 16,
     borderRadius: 12,
     overflow: 'hidden',
     shadowColor: '#000',
@@ -226,13 +206,11 @@ const styles = StyleSheet.create({
 
   // 動画エリア
   videoContainer: {
-    width: SCREEN_WIDTH,
+    width: '100%',
     backgroundColor: '#000',
     position: 'relative',
-  },
-  video: {
-    width: '100%',
-    height: '100%',
+    borderRadius: 8,
+    overflow: 'hidden',
   },
   categoryTag: {
     position: 'absolute',
@@ -253,6 +231,7 @@ const styles = StyleSheet.create({
   // キャプション
   captionContainer: {
     padding: 12,
+    paddingBottom: 8,
   },
   caption: {
     fontSize: 14,
@@ -266,33 +245,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
-  // リアクションバー
-  reactionBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  // リアクション
+  reactionsContainer: {
     paddingHorizontal: 12,
     paddingBottom: 12,
-  },
-  reactionCounts: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  reactionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  reactionEmoji: {
-    fontSize: 16,
-  },
-  reactionCount: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#4A4A4A',
-  },
-  menuButton: {
-    padding: 4,
   },
 });
