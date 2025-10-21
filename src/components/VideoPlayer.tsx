@@ -74,12 +74,19 @@ export function VideoPlayer({
     // 再生状態を同期
     setIsPlaying(status.isPlaying);
 
-    // 動画が終了したらループ再生（最初に戻す）
+    // 動画が終了したらサムネイルに戻る（1回のみ再生）
     if (status.didJustFinish) {
+      setShowThumbnail(true);
+      setIsPlaying(false);
       videoRef.current?.setPositionAsync(0);
-      if (isActive) {
-        videoRef.current?.playAsync();
-      }
+    }
+  };
+
+  // サムネイルタップで全画面表示
+  const handleThumbnailPress = () => {
+    if (showThumbnail && onPressCallback) {
+      // もう一度見る = 全画面で詳細確認
+      onPressCallback();
     }
   };
 
@@ -126,10 +133,23 @@ export function VideoPlayer({
         style={styles.video}
         resizeMode={ResizeMode.COVER}
         shouldPlay={false}
-        isLooping={true}
+        isLooping={false}
         isMuted={isMuted}
         onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
       />
+
+      {/* サムネイル上の「もう一度見る」アイコン */}
+      {showThumbnail && (
+        <TouchableOpacity
+          style={styles.replayOverlay}
+          onPress={handleThumbnailPress}
+          activeOpacity={0.8}
+        >
+          <View style={styles.replayIconContainer}>
+            <Ionicons name="reload-circle" size={60} color="rgba(255, 255, 255, 0.9)" />
+          </View>
+        </TouchableOpacity>
+      )}
 
       {/* 再生アイコン（一時停止時のみ） */}
       {!isPlaying && !showThumbnail && (
@@ -160,6 +180,21 @@ const styles = StyleSheet.create({
   video: {
     width: '100%',
     height: '100%',
+  },
+  replayOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
+  },
+  replayIconContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 50,
+    padding: 8,
   },
   playIconContainer: {
     position: 'absolute',

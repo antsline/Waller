@@ -23,6 +23,9 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 export function VideoModal({ visible, videoUrl, onClose }: VideoModalProps) {
   const videoRef = useRef<Video>(null);
   const [isPlaying, setIsPlaying] = useState(false); // 最初は一時停止
+  const [showControls, setShowControls] = useState(true); // コントロール表示状態
+  const [hasStartedPlaying, setHasStartedPlaying] = useState(false); // 一度でも再生されたか
+  const hideControlsTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const handlePlayPause = async () => {
     if (!videoRef.current) return;
@@ -31,9 +34,36 @@ export function VideoModal({ visible, videoUrl, onClose }: VideoModalProps) {
       if (isPlaying) {
         await videoRef.current.pauseAsync();
         setIsPlaying(false);
+        setShowControls(true); // 一時停止時はコントロールを表示
+        if (hideControlsTimeout.current) {
+          clearTimeout(hideControlsTimeout.current);
+        }
       } else {
+        // 再生開始前に動画の状態を確認
+        const status = await videoRef.current.getStatusAsync();
+
+        // 動画が終了している、または終端近くにいる場合は最初から再生
+        if (status.isLoaded) {
+          const { positionMillis, durationMillis } = status;
+
+          // 終端近く（残り1秒以内）または終了している場合は最初に戻す
+          if (durationMillis && (positionMillis >= durationMillis - 1000 || status.didJustFinish)) {
+            await videoRef.current.setPositionAsync(0);
+          }
+        }
+
         await videoRef.current.playAsync();
         setIsPlaying(true);
+        setHasStartedPlaying(true); // 再生開始済みフラグ
+        setShowControls(true); // 一瞬表示してから消す
+
+        // 2秒後にコントロールを非表示
+        if (hideControlsTimeout.current) {
+          clearTimeout(hideControlsTimeout.current);
+        }
+        hideControlsTimeout.current = setTimeout(() => {
+          setShowControls(false);
+        }, 2000);
       }
     } catch (error) {
       console.error('Video playback error:', error);
@@ -43,18 +73,37 @@ export function VideoModal({ visible, videoUrl, onClose }: VideoModalProps) {
   const handlePlaybackStatusUpdate = (status: AVPlaybackStatus) => {
     if (!status.isLoaded) return;
 
+    // 再生状態を同期
+    if (status.isPlaying && !isPlaying) {
+      setIsPlaying(true);
+    } else if (!status.isPlaying && isPlaying) {
+      setIsPlaying(false);
+    }
+
+    // 動画終了時はコントロールを表示
     if (status.didJustFinish) {
       setIsPlaying(false);
+      setShowControls(true);
+      if (hideControlsTimeout.current) {
+        clearTimeout(hideControlsTimeout.current);
+      }
     }
   };
 
   const handleClose = async () => {
+    // タイムアウトをクリア
+    if (hideControlsTimeout.current) {
+      clearTimeout(hideControlsTimeout.current);
+    }
+
     // 動画を停止してモーダルを閉じる
     if (videoRef.current) {
       await videoRef.current.stopAsync();
       await videoRef.current.setPositionAsync(0);
     }
     setIsPlaying(false);
+    setShowControls(true);
+    setHasStartedPlaying(false);
     onClose();
   };
 
@@ -62,6 +111,8 @@ export function VideoModal({ visible, videoUrl, onClose }: VideoModalProps) {
   const handleModalShow = () => {
     // 最初は一時停止状態（ユーザーがタップして再生）
     setIsPlaying(false);
+    setShowControls(true);
+    setHasStartedPlaying(false);
   };
 
   return (
@@ -95,23 +146,25 @@ export function VideoModal({ visible, videoUrl, onClose }: VideoModalProps) {
             style={styles.video}
             resizeMode={ResizeMode.CONTAIN}
             shouldPlay={false} // 手動再生
-            isLooping={true}
+            isLooping={false} // 1回のみ再生
             isMuted={false} // 全画面では音声ON
             onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
             useNativeControls={false}
           />
 
-          {/* 再生/一時停止アイコン */}
-          <View style={styles.playIconContainer}>
-            <Ionicons
-              name={isPlaying ? 'pause-circle' : 'play-circle'}
-              size={80}
-              color="rgba(255, 255, 255, 0.9)"
-            />
-          </View>
+          {/* 再生/一時停止アイコン（showControlsがtrueの時のみ表示） */}
+          {showControls && (
+            <View style={styles.playIconContainer}>
+              <Ionicons
+                name={isPlaying ? 'pause-circle' : 'play-circle'}
+                size={80}
+                color="rgba(255, 255, 255, 0.9)"
+              />
+            </View>
+          )}
 
-          {/* 音声ONの案内 */}
-          {!isPlaying && (
+          {/* 音声ONの案内（最初の1回のみ表示） */}
+          {!hasStartedPlaying && (
             <View style={styles.audioHint}>
               <Ionicons name="volume-high" size={20} color="#fff" />
               <Text style={styles.audioHintText}>タップして音声付きで再生</Text>
