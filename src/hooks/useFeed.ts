@@ -90,18 +90,28 @@ export function useFeed() {
       }
 
       // 4. データの型変換
-      const formattedData: FeedPost[] = postsData.map((post: any) => ({
-        ...post,
-        player_profile: post.user?.role === 'player' ? playerProfiles[post.user_id] || null : null,
-        counters: post.counters?.[0] || {
-          post_id: post.id,
-          like_count: 0,
-          reaction_fire_count: 0,
-          reaction_clap_count: 0,
-          reaction_sparkle_count: 0,
-          reaction_muscle_count: 0,
-        },
-      }));
+      const formattedData: FeedPost[] = postsData.map((post: any) => {
+        // countersは配列またはオブジェクトで返ってくる可能性があるため、両方に対応
+        let counters;
+        if (Array.isArray(post.counters)) {
+          counters = post.counters[0];
+        } else if (post.counters && typeof post.counters === 'object') {
+          counters = post.counters;
+        }
+
+        return {
+          ...post,
+          player_profile: post.user?.role === 'player' ? playerProfiles[post.user_id] || null : null,
+          counters: counters || {
+            post_id: post.id,
+            like_count: 0,
+            reaction_fire_count: 0,
+            reaction_clap_count: 0,
+            reaction_sparkle_count: 0,
+            reaction_muscle_count: 0,
+          },
+        };
+      });
 
       if (isRefresh) {
         // リフレッシュ時は置き換え
@@ -132,6 +142,8 @@ export function useFeed() {
 
   // リアルタイム更新（post_countersの変更を監視）
   useEffect(() => {
+    console.log('🔔 Setting up realtime subscription for post_counters');
+
     const subscription = supabase
       .channel('post_counters_changes')
       .on(
@@ -142,12 +154,15 @@ export function useFeed() {
           table: 'post_counters',
         },
         (payload) => {
-          console.log('📊 Counter update:', payload);
+          console.log('📊 Counter update received:', JSON.stringify(payload, null, 2));
+          console.log('📊 New counters:', payload.new);
 
           // 該当する投稿のカウンターを更新
-          setPosts((currentPosts) =>
-            currentPosts.map((post) => {
-              if (post.id === payload.new.post_id) {
+          setPosts((currentPosts) => {
+            console.log(`🔄 Updating post ${payload.new?.post_id} in ${currentPosts.length} posts`);
+            return currentPosts.map((post) => {
+              if (post.id === payload.new?.post_id) {
+                console.log('✅ Found matching post, updating counters');
                 return {
                   ...post,
                   counters: {
@@ -161,13 +176,16 @@ export function useFeed() {
                 };
               }
               return post;
-            })
-          );
+            });
+          });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🔔 Subscription status:', status);
+      });
 
     return () => {
+      console.log('🔕 Unsubscribing from post_counters changes');
       subscription.unsubscribe();
     };
   }, []);
