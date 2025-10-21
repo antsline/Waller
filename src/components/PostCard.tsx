@@ -11,6 +11,7 @@ import { FeedPost, CATEGORY_LABELS, SKILL_LEVEL_LABELS } from '../types/feed.typ
 import { VideoPlayer } from './VideoPlayer';
 import { VideoModal } from './VideoModal';
 import { ReactionButtons } from './ReactionButtons';
+import { getRelativeTime } from '../utils/formatDate';
 
 interface PostCardProps {
   post: FeedPost;
@@ -39,6 +40,9 @@ export function PostCard({ post, onPress, onUserPress, isActive = false }: PostC
   const skillLevelText = post.player_profile
     ? SKILL_LEVEL_LABELS[post.player_profile.skill_level]
     : '';
+
+  // 投稿日時の相対表示
+  const relativeTime = getRelativeTime(post.created_at);
 
   // キャプションの表示（2行まで）
   const shouldTruncateCaption = post.caption && post.caption.length > 60;
@@ -70,14 +74,18 @@ export function PostCard({ post, onPress, onUserPress, isActive = false }: PostC
         <View style={styles.userInfo}>
           <View style={styles.userNameRow}>
             <Text style={styles.username}>@{post.user.username}</Text>
-            {post.player_profile && (
+            <Text style={styles.timeSeparator}>·</Text>
+            <Text style={styles.relativeTime}>{relativeTime}</Text>
+          </View>
+          {post.player_profile && (
+            <View style={styles.badgeRow}>
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>
                   {skillLevelText} · {experienceText}
                 </Text>
               </View>
-            )}
-          </View>
+            </View>
+          )}
           {post.player_profile && (post.player_profile.team_name || post.player_profile.home_gym) && (
             <Text style={styles.teamGym}>
               {[post.player_profile.team_name, post.player_profile.home_gym]
@@ -181,13 +189,26 @@ const styles = StyleSheet.create({
   userNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   username: {
     fontSize: 15,
     fontWeight: '600',
     color: '#1A1A1A',
-    marginRight: 8,
+  },
+  timeSeparator: {
+    fontSize: 15,
+    color: '#9E9E9E',
+    marginHorizontal: 6,
+  },
+  relativeTime: {
+    fontSize: 15,
+    color: '#9E9E9E',
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
   },
   badge: {
     backgroundColor: '#F5F5F5',
