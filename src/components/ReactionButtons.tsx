@@ -11,6 +11,7 @@ interface ReactionButtonsProps {
   clapCount: number;
   sparkleCount: number;
   muscleCount: number;
+  compact?: boolean; // コンパクトモード（カウント数非表示）
 }
 
 const REACTIONS = [
@@ -27,6 +28,7 @@ export function ReactionButtons({
   clapCount,
   sparkleCount,
   muscleCount,
+  compact = false,
 }: ReactionButtonsProps) {
   const { isLiked, toggleLike, isLoading: likeLoading } = useLike(postId);
   const {
@@ -73,10 +75,12 @@ export function ReactionButtons({
         >
           <Ionicons
             name={isLiked ? 'heart' : 'heart-outline'}
-            size={22}
+            size={compact ? 26 : 22}
             color={isLiked ? '#F44336' : '#9E9E9E'}
           />
-          <Text style={[styles.count, isLiked && styles.countActive]}>{likeCount}</Text>
+          {!compact && (
+            <Text style={[styles.count, isLiked && styles.countActive]}>{likeCount}</Text>
+          )}
         </TouchableOpacity>
 
         {/* スタンプボタン */}
@@ -102,10 +106,14 @@ export function ReactionButtons({
               disabled={reactionLoading}
               activeOpacity={0.7}
             >
-              <Text style={styles.reactionEmoji}>{reaction.emoji}</Text>
-              <Text style={[styles.count, isSelected && styles.countSelected]}>
-                {count}
+              <Text style={[styles.reactionEmoji, compact && styles.reactionEmojiCompact]}>
+                {reaction.emoji}
               </Text>
+              {!compact && (
+                <Text style={[styles.count, isSelected && styles.countSelected]}>
+                  {count}
+                </Text>
+              )}
             </TouchableOpacity>
           );
         })}
@@ -162,6 +170,9 @@ const styles = StyleSheet.create({
   },
   reactionEmoji: {
     fontSize: 16,
+  },
+  reactionEmojiCompact: {
+    fontSize: 22,
   },
   count: {
     fontSize: 12,

@@ -12,15 +12,17 @@ import { VideoPlayer } from './VideoPlayer';
 import { VideoModal } from './VideoModal';
 import { ReactionButtons } from './ReactionButtons';
 import { getRelativeTime } from '../utils/formatDate';
+import { formatExperience } from '../utils/experience';
 
 interface PostCardProps {
   post: FeedPost;
   onPress?: () => void;
   onUserPress?: () => void;
+  onPostDetailPress?: () => void; // 投稿詳細画面への遷移
   isActive?: boolean; // 画面中央に表示されているか（自動再生用）
 }
 
-export function PostCard({ post, onPress, onUserPress, isActive = false }: PostCardProps) {
+export function PostCard({ post, onPress, onUserPress, onPostDetailPress, isActive = false }: PostCardProps) {
   const [showFullCaption, setShowFullCaption] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -28,12 +30,8 @@ export function PostCard({ post, onPress, onUserPress, isActive = false }: PostC
   const categoryInfo = post.category_tag ? CATEGORY_LABELS[post.category_tag] : null;
 
   // 経験年数の表示（例: 1年6ヶ月）
-  const experienceText = post.player_profile
-    ? `${post.player_profile.experience_years}年${
-        post.player_profile.experience_months > 0
-          ? `${post.player_profile.experience_months}ヶ月`
-          : ''
-      }`
+  const experienceText = post.player_profile && post.player_profile.started_at
+    ? formatExperience(post.player_profile.started_at)
     : '';
 
   // スキルレベルの表示
@@ -103,7 +101,13 @@ export function PostCard({ post, onPress, onUserPress, isActive = false }: PostC
           thumbnailUrl={post.thumbnail_url}
           isActive={isActive}
           initialMuted={isMuted}
-          onPress={() => setShowVideoModal(true)}
+          onPress={() => {
+            if (onPostDetailPress) {
+              onPostDetailPress();
+            } else {
+              setShowVideoModal(true);
+            }
+          }}
           onMuteToggle={(muted) => setIsMuted(muted)}
         />
 
@@ -117,12 +121,14 @@ export function PostCard({ post, onPress, onUserPress, isActive = false }: PostC
         )}
       </View>
 
-      {/* 全画面動画モーダル */}
-      <VideoModal
-        visible={showVideoModal}
-        videoUrl={post.video_url}
-        onClose={() => setShowVideoModal(false)}
-      />
+      {/* 全画面動画モーダル（フォールバック用） */}
+      {!onPostDetailPress && (
+        <VideoModal
+          visible={showVideoModal}
+          videoUrl={post.video_url}
+          onClose={() => setShowVideoModal(false)}
+        />
+      )}
 
       {/* キャプション */}
       {post.caption && (

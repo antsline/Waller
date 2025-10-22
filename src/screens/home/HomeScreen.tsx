@@ -9,12 +9,12 @@ import {
   SafeAreaView,
   ViewToken,
 } from 'react-native';
-import { MainTabScreenProps } from '../../types/navigation';
+import { HomeStackScreenProps } from '../../types/navigation';
 import { useFeed } from '../../hooks/useFeed';
 import { PostCard } from '../../components/PostCard';
 import { FeedPost } from '../../types/feed.types';
 
-type Props = MainTabScreenProps<'Home'>;
+type Props = HomeStackScreenProps<'HomeFeed'>;
 
 export function HomeScreen({ navigation }: Props) {
   const { posts, loading, refreshing, hasMore, handleRefresh, loadMore } = useFeed();
@@ -52,9 +52,8 @@ export function HomeScreen({ navigation }: Props) {
     <PostCard
       post={item}
       isActive={activePostId === item.id}
-      onPress={() => {
-        // TODO: 投稿詳細画面への遷移
-        console.log('Post pressed:', item.id);
+      onPostDetailPress={() => {
+        navigation.navigate('PostDetail', { postId: item.id });
       }}
       onUserPress={() => {
         // TODO: プロフィール画面への遷移

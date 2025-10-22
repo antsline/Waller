@@ -13,6 +13,7 @@ interface VideoPlayerProps {
   isActive?: boolean; // フィードで画面中央に表示されているか（自動再生制御用）
   initialMuted?: boolean; // 初期ミュート状態
   onMuteToggle?: (muted: boolean) => void; // ミュート切り替えコールバック
+  showControls?: boolean; // 再生コントロールを表示するか（投稿詳細用）
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width;

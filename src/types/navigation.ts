@@ -17,6 +17,12 @@ export type MainTabParamList = {
   MyPage: undefined;
 };
 
+// Home Stack (投稿詳細などを含む)
+export type HomeStackParamList = {
+  HomeFeed: undefined;
+  PostDetail: { postId: string };
+};
+
 // Root Stack
 export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
@@ -36,5 +42,10 @@ export type MainTabScreenProps<T extends keyof MainTabParamList> = BottomTabScre
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<
   RootStackParamList,
+  T
+>;
+
+export type HomeStackScreenProps<T extends keyof HomeStackParamList> = NativeStackScreenProps<
+  HomeStackParamList,
   T
 >;

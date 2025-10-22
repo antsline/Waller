@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { MainTabParamList } from '../types/navigation';
-import { HomeScreen } from '../screens/home/HomeScreen';
+import { HomeStack } from './HomeStack';
 import { CreatePostScreen } from '../screens/post/CreatePostScreen';
 import { MyPageScreen } from '../screens/profile/MyPageScreen';
 import { useAuth } from '../hooks/useAuth';
@@ -43,7 +43,7 @@ export function MainTabs() {
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeStack}
         options={{
           title: 'ホーム',
           tabBarIcon: ({ color, focused }) => (

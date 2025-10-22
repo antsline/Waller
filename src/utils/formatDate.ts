@@ -44,3 +44,22 @@ export function getRelativeTime(dateString: string): string {
 
   return `${year}年${month}月${day}日`;
 }
+
+/**
+ * 投稿日時を完全な形式で表示する（投稿詳細用）
+ * @param dateString ISO 8601形式の日時文字列
+ * @returns 完全な日時の文字列（例: 2024年10月21日 12:34）
+ */
+export function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+
+  const paddedHours = hours.toString().padStart(2, '0');
+  const paddedMinutes = minutes.toString().padStart(2, '0');
+
+  return `${year}年${month}月${day}日 ${paddedHours}:${paddedMinutes}`;
+}
