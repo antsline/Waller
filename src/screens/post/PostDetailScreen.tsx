@@ -19,6 +19,8 @@ import { FeedPost, SKILL_LEVEL_LABELS } from '../../types/feed.types';
 import { supabase } from '../../services/supabase';
 import { formatExperience } from '../../utils/experience';
 import { useAuth } from '../../hooks/useAuth';
+import { useDeletePost } from '../../hooks/useDeletePost';
+import { EditPostModal } from './EditPostModal';
 
 type Props = HomeStackScreenProps<'PostDetail'>;
 
@@ -27,6 +29,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 export function PostDetailScreen({ route, navigation }: Props) {
   const { postId } = route.params;
   const { user } = useAuth();
+  const { checkDeletePermission, executeDelete, isDeleting } = useDeletePost();
   const insets = useSafeAreaInsets();
   const videoRef = useRef<Video>(null);
   const [post, setPost] = useState<FeedPost | null>(null);
@@ -34,6 +37,7 @@ export function PostDetailScreen({ route, navigation }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // 投稿データを取得
   useEffect(() => {
@@ -136,6 +140,53 @@ export function PostDetailScreen({ route, navigation }: Props) {
     }
   };
 
+  // 削除処理
+  const handleDelete = async () => {
+    if (!post) return;
+
+    // 1. 削除可能かチェック
+    const checkResult = await checkDeletePermission(post.created_at);
+
+    if (!checkResult.canDelete) {
+      Alert.alert('削除できません', checkResult.errorMessage || '削除に失敗しました');
+      return;
+    }
+
+    // 2. 削除確認ダイアログ
+    const confirmMessage = checkResult.isWithin10Minutes
+      ? 'この投稿を削除しますか？\n（投稿から10分以内のため、無制限に削除できます）'
+      : `この投稿を削除しますか？\n（本日の削除可能回数: 残り${checkResult.remainingDeletes}回）`;
+
+    Alert.alert('投稿を削除', confirmMessage, [
+      {
+        text: 'キャンセル',
+        style: 'cancel',
+      },
+      {
+        text: '削除',
+        style: 'destructive',
+        onPress: async () => {
+          // 3. 削除実行
+          const result = await executeDelete(post.id);
+
+          if (result.success) {
+            Alert.alert('削除完了', '投稿を削除しました', [
+              {
+                text: 'OK',
+                onPress: () => {
+                  // フィード画面に戻る
+                  navigation.goBack();
+                },
+              },
+            ]);
+          } else {
+            Alert.alert('エラー', result.error || '投稿の削除に失敗しました');
+          }
+        },
+      },
+    ]);
+  };
+
   // メニューボタン押下時
   const handleMenuPress = () => {
     const isOwnPost = post && user && post.user.id === user.id;
@@ -146,17 +197,13 @@ export function PostDetailScreen({ route, navigation }: Props) {
             {
               text: '編集',
               onPress: () => {
-                // TODO: 編集画面に遷移
-                console.log('編集');
+                setShowEditModal(true);
               },
             },
             {
               text: '削除',
               style: 'destructive',
-              onPress: () => {
-                // TODO: 削除処理
-                console.log('削除');
-              },
+              onPress: handleDelete,
             },
           ]
         : [
@@ -174,6 +221,12 @@ export function PostDetailScreen({ route, navigation }: Props) {
         style: 'cancel',
       },
     ]);
+  };
+
+  // 編集後のコールバック
+  const handleEditSaved = () => {
+    // 投稿データを再取得
+    fetchPost();
   };
 
   // プロフィール画面へ遷移
@@ -311,6 +364,18 @@ export function PostDetailScreen({ route, navigation }: Props) {
           </View>
         </TouchableOpacity>
       </View>
+
+      {/* 編集モーダル */}
+      {post && (
+        <EditPostModal
+          visible={showEditModal}
+          postId={post.id}
+          initialCaption={post.caption || ''}
+          initialCategoryTag={post.category_tag}
+          onClose={() => setShowEditModal(false)}
+          onSaved={handleEditSaved}
+        />
+      )}
     </View>
   );
 }

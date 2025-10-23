@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   ViewToken,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { HomeStackScreenProps } from '../../types/navigation';
 import { useFeed } from '../../hooks/useFeed';
 import { PostCard } from '../../components/PostCard';
@@ -19,6 +20,14 @@ type Props = HomeStackScreenProps<'HomeFeed'>;
 export function HomeScreen({ navigation }: Props) {
   const { posts, loading, refreshing, hasMore, handleRefresh, loadMore } = useFeed();
   const [activePostId, setActivePostId] = useState<string | null>(null);
+
+  // 画面にフォーカスが戻った時にフィードを再読み込み
+  useFocusEffect(
+    useCallback(() => {
+      // 投稿詳細画面から戻ってきた時にリフレッシュ
+      handleRefresh();
+    }, [])
+  );
 
   // 表示中の投稿を検出するコールバック
   const onViewableItemsChanged = useRef(
