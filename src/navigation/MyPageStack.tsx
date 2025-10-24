@@ -2,6 +2,8 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MyPageScreen } from '../screens/profile/MyPageScreen';
 import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
+import { SettingsScreen } from '../screens/settings/SettingsScreen';
+import { WebViewScreen } from '../screens/common/WebViewScreen';
 import { PostDetailScreen } from '../screens/post/PostDetailScreen';
 import { UserProfileScreen } from '../screens/profile/UserProfileScreen';
 import { MyPageStackParamList } from '../types/navigation';
@@ -22,6 +24,22 @@ export function MyPageStack() {
         options={{
           presentation: 'modal',
           animation: 'slide_from_bottom',
+        }}
+      />
+      <Stack.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          presentation: 'card',
+          animation: 'slide_from_right',
+        }}
+      />
+      <Stack.Screen
+        name="WebView"
+        component={WebViewScreen}
+        options={{
+          presentation: 'card',
+          animation: 'slide_from_right',
         }}
       />
       <Stack.Screen

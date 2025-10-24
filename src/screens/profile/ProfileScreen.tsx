@@ -61,8 +61,9 @@ export function ProfileScreen({ userId, navigation, showBackButton, onBackPress,
   };
 
   const handleSettings = () => {
-    // TODO: 設定画面への遷移
-    console.log('設定');
+    if (navigation) {
+      navigation.navigate('Settings');
+    }
   };
 
   // ローディング中

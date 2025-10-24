@@ -28,6 +28,8 @@ export type HomeStackParamList = {
 export type MyPageStackParamList = {
   MyPageProfile: undefined;
   EditProfile: undefined;
+  Settings: undefined;
+  WebView: { url: string; title: string };
   PostDetail: { postId: string };
   UserProfile: { userId: string };
 };
