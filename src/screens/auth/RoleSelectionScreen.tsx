@@ -48,34 +48,40 @@ export function RoleSelectionScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>あなたの立場を選択してください</Text>
+      <View style={styles.contentContainer}>
+        <View style={styles.titleContainer}>
+          <Text style={styles.subtitle}>ウォールトランポリン特化型SNS</Text>
+          <Text style={styles.appName}>WALLER</Text>
+          <Text style={styles.title}>どちらで参加しますか？</Text>
+        </View>
 
-      <View style={styles.roleContainer}>
-        <TouchableOpacity
-          style={[styles.roleCard, selectedRole === 'player' && styles.roleCardSelected]}
-          onPress={() => setSelectedRole('player')}
-        >
-          <View style={styles.radioButton}>
-            {selectedRole === 'player' && <View style={styles.radioButtonInner} />}
-          </View>
-          <Text style={styles.roleTitle}>プレーヤー</Text>
-          <Text style={styles.roleDescription}>
-            自分の技や挑戦を記録・共有したい競技者
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.roleContainer}>
+          <TouchableOpacity
+            style={[styles.roleCard, selectedRole === 'player' && styles.roleCardSelected]}
+            onPress={() => setSelectedRole('player')}
+          >
+            <View style={styles.radioButton}>
+              {selectedRole === 'player' && <View style={styles.radioButtonInner} />}
+            </View>
+            <Text style={styles.roleTitle}>Waller</Text>
+            <Text style={styles.roleDescription}>
+              ウォールトランポリンプレーヤー
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.roleCard, selectedRole === 'fan' && styles.roleCardSelected]}
-          onPress={() => setSelectedRole('fan')}
-        >
-          <View style={styles.radioButton}>
-            {selectedRole === 'fan' && <View style={styles.radioButtonInner} />}
-          </View>
-          <Text style={styles.roleTitle}>ファン</Text>
-          <Text style={styles.roleDescription}>
-            プレーヤーを応援・閲覧したい家族/友人/興味層
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.roleCard, selectedRole === 'fan' && styles.roleCardSelected]}
+            onPress={() => setSelectedRole('fan')}
+          >
+            <View style={styles.radioButton}>
+              {selectedRole === 'fan' && <View style={styles.radioButtonInner} />}
+            </View>
+            <Text style={styles.roleTitle}>Supporter</Text>
+            <Text style={styles.roleDescription}>
+              Wallerを応援・観戦する
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <TouchableOpacity
@@ -99,18 +105,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 24,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 48,
-    marginBottom: 8,
+  contentContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  titleContainer: {
+    marginBottom: 32,
   },
   subtitle: {
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
-    marginBottom: 48,
+    marginBottom: 8,
+  },
+  appName: {
+    fontSize: 42,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   roleContainer: {
     gap: 16,
