@@ -18,6 +18,8 @@ import { useLikedPosts } from '../../hooks/useLikedPosts';
 import { SKILL_LEVEL_LABELS } from '../../types/feed.types';
 import { formatExperience } from '../../utils/experience';
 import { MyPageStackScreenProps } from '../../types/navigation';
+import { SkeletonLoader } from '../../components/SkeletonLoader';
+import { EmptyState } from '../../components/EmptyState';
 
 interface ProfileScreenProps {
   userId?: string; // 指定しない場合は自分のプロフィール
@@ -70,9 +72,7 @@ export function ProfileScreen({ userId, navigation, showBackButton, onBackPress,
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF6B00" />
-        </View>
+        <SkeletonLoader type="profile" />
       </SafeAreaView>
     );
   }
@@ -292,16 +292,13 @@ export function ProfileScreen({ userId, navigation, showBackButton, onBackPress,
         {/* 投稿グリッド */}
         <View style={styles.gridContainer}>
           {isPostsLoading ? (
-            <View style={styles.loadingState}>
-              <ActivityIndicator size="large" color="#FF6B00" />
-            </View>
+            <SkeletonLoader type="grid" count={6} />
           ) : displayPosts.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="images-outline" size={64} color="#E0E0E0" />
-              <Text style={styles.emptyText}>
-                {selectedTab === 'posts' ? 'まだ投稿がありません' : 'まだいいねした投稿がありません'}
-              </Text>
-            </View>
+            <EmptyState
+              icon="images-outline"
+              title={selectedTab === 'posts' ? 'まだ投稿がありません' : 'まだいいねした投稿がありません'}
+              description={selectedTab === 'posts' ? '最初の投稿をしてみましょう！' : 'お気に入りの投稿にいいねしてみましょう！'}
+            />
           ) : (
             <View style={styles.grid}>
               {displayPosts.map((post) => (

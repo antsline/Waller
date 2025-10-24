@@ -16,6 +16,8 @@ import { Video, ResizeMode } from 'expo-av';
 import { MainTabScreenProps } from '../../types/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { useVideoPicker } from '../../hooks/useVideoPicker';
+import { useToast } from '../../hooks/useToast';
+import { Toast } from '../../components/Toast';
 import { generateThumbnail } from '../../utils/generateThumbnail';
 import { uploadPostMedia } from '../../services/storage';
 import { supabase } from '../../services/supabase';
@@ -37,6 +39,7 @@ type CategoryId = typeof CATEGORIES[number]['id'];
 export function CreatePostScreen({ navigation }: Props) {
   const { user } = useAuth();
   const { videoUri, videoInfo, pickVideo, clearVideo, isLoading: isPickingVideo } = useVideoPicker();
+  const { toast, showToast, hideToast } = useToast();
 
   const scrollViewRef = useRef<ScrollView>(null);
   const captionInputRef = useRef<View>(null);
@@ -84,12 +87,12 @@ export function CreatePostScreen({ navigation }: Props) {
   // 投稿処理
   const handleSubmit = async () => {
     if (!user || !videoUri || !thumbnailUri || !videoInfo) {
-      Alert.alert('エラー', '動画を選択してください');
+      showToast('動画を選択してください', 'warning');
       return;
     }
 
     if (!selectedCategory) {
-      Alert.alert('エラー', 'カテゴリを選択してください');
+      showToast('カテゴリを選択してください', 'warning');
       return;
     }
 
@@ -141,23 +144,20 @@ export function CreatePostScreen({ navigation }: Props) {
 
       console.log('✅ 投稿完了');
 
-      // 成功後の処理
-      Alert.alert('投稿完了', '投稿が公開されました！', [
-        {
-          text: 'OK',
-          onPress: () => {
-            // リセットしてホーム画面へ
-            clearVideo();
-            setThumbnailUri(null);
-            setSelectedCategory(null);
-            setCaption('');
-            navigation.navigate('Home');
-          },
-        },
-      ]);
+      // 成功メッセージ
+      showToast('投稿が公開されました！', 'success');
+
+      // リセットしてホーム画面へ
+      setTimeout(() => {
+        clearVideo();
+        setThumbnailUri(null);
+        setSelectedCategory(null);
+        setCaption('');
+        navigation.navigate('Home');
+      }, 1000);
     } catch (error: any) {
       console.error('投稿エラー:', error);
-      Alert.alert('エラー', error.message || '投稿に失敗しました');
+      showToast(error.message || '投稿に失敗しました', 'error');
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -312,6 +312,13 @@ export function CreatePostScreen({ navigation }: Props) {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onHide={hideToast}
+      />
     </SafeAreaView>
   );
 }

@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { AuthStackScreenProps } from '../../types/navigation';
 import { useAuth } from '../../hooks/useAuth';
+import { useToast } from '../../hooks/useToast';
+import { Toast } from '../../components/Toast';
+import { InlineError } from '../../components/InlineError';
 import Constants from 'expo-constants';
 import axios from 'axios';
 import { supabase } from '../../services/supabase';
@@ -10,9 +13,12 @@ type Props = AuthStackScreenProps<'Login'>;
 
 export function LoginScreen({ navigation }: Props) {
   const { signInWithEmail, signUpWithEmail, loading } = useAuth();
+  const { toast, showToast, hideToast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   const testConnection = async () => {
     try {
@@ -40,7 +46,38 @@ export function LoginScreen({ navigation }: Props) {
     }
   };
 
+  const validateForm = (): boolean => {
+    let isValid = true;
+    setEmailError('');
+    setPasswordError('');
+
+    // メールアドレスのバリデーション
+    if (!email) {
+      setEmailError('メールアドレスを入力してください');
+      isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError('有効なメールアドレスを入力してください');
+      isValid = false;
+    }
+
+    // パスワードのバリデーション
+    if (!password) {
+      setPasswordError('パスワードを入力してください');
+      isValid = false;
+    } else if (password.length < 6) {
+      setPasswordError('パスワードは6文字以上で入力してください');
+      isValid = false;
+    }
+
+    return isValid;
+  };
+
   const handleAuth = async () => {
+    // バリデーション
+    if (!validateForm()) {
+      return;
+    }
+
     try {
       console.log('🎯 Current mode:', isSignUp ? 'SIGNUP (新規登録)' : 'SIGNIN (ログイン)');
       console.log('📧 Email:', email);
@@ -61,14 +98,14 @@ export function LoginScreen({ navigation }: Props) {
 
         // セッションが作成されているか確認
         if (!result.session || !result.user) {
-          Alert.alert(
-            'メール確認が必要です',
-            'Supabaseでメール確認が有効になっています。開発環境では、Supabase Dashboard → Authentication → Settings → Enable email confirmations をオフにしてください。'
+          showToast(
+            'Supabaseでメール確認が有効になっています。開発環境では無効にしてください。',
+            'warning'
           );
           return;
         }
 
-        Alert.alert('成功', '登録が完了しました。ロール選択に進んでください。');
+        showToast('登録が完了しました', 'success');
 
         // ロール選択画面に遷移
         navigation.navigate('RoleSelection');
@@ -77,6 +114,7 @@ export function LoginScreen({ navigation }: Props) {
         const result = await signInWithEmail(email, password);
 
         if (!result.user) {
+          showToast('ログインに失敗しました', 'error');
           return;
         }
 
@@ -90,11 +128,13 @@ export function LoginScreen({ navigation }: Props) {
 
         if (error || !userData) {
           console.error('Failed to fetch user data:', error);
-          Alert.alert('エラー', 'ユーザー情報の取得に失敗しました');
+          showToast('ユーザー情報の取得に失敗しました', 'error');
           return;
         }
 
         console.log('📊 User data after login:', userData);
+
+        showToast('ログインしました', 'success');
 
         // プロフィール完了状態に応じて遷移
         if (!userData.role) {
@@ -114,7 +154,7 @@ export function LoginScreen({ navigation }: Props) {
       }
     } catch (error: any) {
       console.error('❌ Login/Signup failed:', error);
-      Alert.alert('エラー', error.message || 'ネットワークエラーが発生しました');
+      showToast(error.message || 'ネットワークエラーが発生しました', 'error');
     }
   };
 
@@ -126,22 +166,30 @@ export function LoginScreen({ navigation }: Props) {
       <View style={styles.form}>
         <Text style={styles.label}>メールアドレス</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, emailError && styles.inputError]}
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(text) => {
+            setEmail(text);
+            setEmailError('');
+          }}
           placeholder="email@example.com"
           autoCapitalize="none"
           keyboardType="email-address"
         />
+        <InlineError message={emailError} visible={!!emailError} />
 
         <Text style={styles.label}>パスワード</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, passwordError && styles.inputError]}
           value={password}
-          onChangeText={setPassword}
+          onChangeText={(text) => {
+            setPassword(text);
+            setPasswordError('');
+          }}
           placeholder="6文字以上"
           secureTextEntry
         />
+        <InlineError message={passwordError} visible={!!passwordError} />
 
         <TouchableOpacity
           style={styles.button}
@@ -170,6 +218,13 @@ export function LoginScreen({ navigation }: Props) {
           本番環境ではGoogle/Apple認証を実装予定
         </Text>
       </View>
+
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onHide={hideToast}
+      />
     </View>
   );
 }
@@ -208,7 +263,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    marginBottom: 16,
+    marginBottom: 8,
+  },
+  inputError: {
+    borderColor: '#F44336',
   },
   button: {
     backgroundColor: '#FF6B00',

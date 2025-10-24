@@ -14,6 +14,8 @@ import { HomeStackScreenProps } from '../../types/navigation';
 import { useFeed } from '../../hooks/useFeed';
 import { PostCard } from '../../components/PostCard';
 import { FeedPost } from '../../types/feed.types';
+import { SkeletonLoader } from '../../components/SkeletonLoader';
+import { EmptyState } from '../../components/EmptyState';
 
 type Props = HomeStackScreenProps<'HomeFeed'>;
 
@@ -96,12 +98,11 @@ export function HomeScreen({ navigation }: Props) {
     }
 
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyTitle}>まだ投稿がありません</Text>
-        <Text style={styles.emptySubtitle}>
-          最初の投稿をしてWallerコミュニティを盛り上げよう！
-        </Text>
-      </View>
+      <EmptyState
+        icon="images-outline"
+        title="まだ投稿がありません"
+        description="最初の投稿をしてWallerコミュニティを盛り上げよう！"
+      />
     );
   };
 
@@ -115,10 +116,7 @@ export function HomeScreen({ navigation }: Props) {
 
         {/* フィード */}
         {loading && posts.length === 0 ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#FF6B00" />
-            <Text style={styles.loadingText}>投稿を読み込んでいます...</Text>
-          </View>
+          <SkeletonLoader type="post" count={3} />
         ) : (
           <FlatList
             data={posts}

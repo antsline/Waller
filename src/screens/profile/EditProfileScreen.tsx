@@ -17,6 +17,9 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../hooks/useAuth';
 import { useProfile } from '../../hooks/useProfile';
+import { useToast } from '../../hooks/useToast';
+import { Toast } from '../../components/Toast';
+import { InlineError } from '../../components/InlineError';
 import { supabase } from '../../services/supabase';
 import { MyPageStackScreenProps } from '../../types/navigation';
 import { SKILL_LEVEL_LABELS } from '../../types/feed.types';
@@ -27,6 +30,7 @@ type Props = MyPageStackScreenProps<'EditProfile'>;
 export function EditProfileScreen({ navigation }: Props) {
   const { user: authUser } = useAuth();
   const { profile, loading: profileLoading, refetch } = useProfile();
+  const { toast, showToast, hideToast } = useToast();
   const [saving, setSaving] = useState(false);
 
   // フォームの状態
@@ -35,6 +39,11 @@ export function EditProfileScreen({ navigation }: Props) {
   const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [localImageUri, setLocalImageUri] = useState<string | null>(null);
+
+  // エラー状態
+  const [displayNameError, setDisplayNameError] = useState('');
+  const [usernameError, setUsernameError] = useState('');
+  const [bioError, setBioError] = useState('');
 
   // プレーヤー専用フィールド
   const [skillLevel, setSkillLevel] = useState(1);
@@ -126,49 +135,50 @@ export function EditProfileScreen({ navigation }: Props) {
 
   // バリデーション
   const validate = (): boolean => {
+    let isValid = true;
+    setDisplayNameError('');
+    setUsernameError('');
+    setBioError('');
+
     if (!displayName.trim()) {
-      Alert.alert('エラー', '表示名を入力してください');
-      return false;
+      setDisplayNameError('表示名を入力してください');
+      isValid = false;
     }
 
     if (!username.trim()) {
-      Alert.alert('エラー', 'ユーザーネームを入力してください');
-      return false;
-    }
-
-    if (username.length < 3 || username.length > 20) {
-      Alert.alert('エラー', 'ユーザーネームは3〜20文字で入力してください');
-      return false;
-    }
-
-    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      Alert.alert('エラー', 'ユーザーネームは英数字とアンダースコアのみ使用できます');
-      return false;
+      setUsernameError('ユーザーネームを入力してください');
+      isValid = false;
+    } else if (username.length < 3 || username.length > 20) {
+      setUsernameError('ユーザーネームは3〜20文字で入力してください');
+      isValid = false;
+    } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      setUsernameError('英数字とアンダースコアのみ使用できます');
+      isValid = false;
     }
 
     if (bio.length > 200) {
-      Alert.alert('エラー', '自己紹介は200文字以内で入力してください');
-      return false;
+      setBioError('自己紹介は200文字以内で入力してください');
+      isValid = false;
     }
 
     if (isPlayer) {
       if (teamName.length > 30) {
-        Alert.alert('エラー', 'チーム名は30文字以内で入力してください');
-        return false;
+        showToast('チーム名は30文字以内で入力してください', 'warning');
+        isValid = false;
       }
 
       if (homeGym.length > 30) {
-        Alert.alert('エラー', 'ジム名は30文字以内で入力してください');
-        return false;
+        showToast('ジム名は30文字以内で入力してください', 'warning');
+        isValid = false;
       }
 
       if (mainLocation.length > 30) {
-        Alert.alert('エラー', '活動地域は30文字以内で入力してください');
-        return false;
+        showToast('活動地域は30文字以内で入力してください', 'warning');
+        isValid = false;
       }
     }
 
-    return true;
+    return isValid;
   };
 
   // 保存処理
@@ -225,12 +235,15 @@ export function EditProfileScreen({ navigation }: Props) {
       // プロフィールを再取得
       await refetch();
 
-      Alert.alert('成功', 'プロフィールを更新しました', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
-    } catch (error) {
+      showToast('プロフィールを更新しました', 'success');
+
+      // 少し待ってから戻る
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1000);
+    } catch (error: any) {
       console.error('プロフィール更新エラー:', error);
-      Alert.alert('エラー', 'プロフィールの更新に失敗しました');
+      showToast(error.message || 'プロフィールの更新に失敗しました', 'error');
     } finally {
       setSaving(false);
     }
@@ -300,12 +313,16 @@ export function EditProfileScreen({ navigation }: Props) {
               表示名 <Text style={styles.required}>*</Text>
             </Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, displayNameError && styles.inputError]}
               value={displayName}
-              onChangeText={setDisplayName}
+              onChangeText={(text) => {
+                setDisplayName(text);
+                setDisplayNameError('');
+              }}
               placeholder="山田太郎"
               maxLength={20}
             />
+            <InlineError message={displayNameError} visible={!!displayNameError} />
           </View>
 
           <View style={styles.inputGroup}>
@@ -313,28 +330,38 @@ export function EditProfileScreen({ navigation }: Props) {
               ユーザーネーム <Text style={styles.required}>*</Text>
             </Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, usernameError && styles.inputError]}
               value={username}
-              onChangeText={setUsername}
+              onChangeText={(text) => {
+                setUsername(text);
+                setUsernameError('');
+              }}
               placeholder="taro_yamada"
               autoCapitalize="none"
               maxLength={20}
             />
-            <Text style={styles.hint}>英数字とアンダースコアのみ（3〜20文字）</Text>
+            {!usernameError && (
+              <Text style={styles.hint}>英数字とアンダースコアのみ（3〜20文字）</Text>
+            )}
+            <InlineError message={usernameError} visible={!!usernameError} />
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>自己紹介</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={[styles.input, styles.textArea, bioError && styles.inputError]}
               value={bio}
-              onChangeText={setBio}
+              onChangeText={(text) => {
+                setBio(text);
+                setBioError('');
+              }}
               placeholder="自己紹介を入力してください"
               multiline
               numberOfLines={4}
               maxLength={200}
             />
             <Text style={styles.charCount}>{bio.length}/200</Text>
+            <InlineError message={bioError} visible={!!bioError} />
           </View>
         </View>
 
@@ -497,6 +524,13 @@ export function EditProfileScreen({ navigation }: Props) {
 
         <View style={styles.bottomPadding} />
       </ScrollView>
+
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onHide={hideToast}
+      />
     </SafeAreaView>
   );
 }
@@ -606,6 +640,9 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     borderWidth: 1,
     borderColor: '#E0E0E0',
+  },
+  inputError: {
+    borderColor: '#F44336',
   },
   textArea: {
     height: 100,

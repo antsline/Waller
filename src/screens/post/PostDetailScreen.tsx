@@ -22,6 +22,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useDeletePost } from '../../hooks/useDeletePost';
 import { EditPostModal } from './EditPostModal';
 import { ReportModal } from '../report/ReportModal';
+import { Spinner } from '../../components/Spinner';
 
 type Props = HomeStackScreenProps<'PostDetail'> | MyPageStackScreenProps<'PostDetail'>;
 
@@ -240,7 +241,7 @@ export function PostDetailScreen({ route, navigation }: Props) {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FF6B00" />
+        <Spinner size="large" message="投稿を読み込んでいます..." />
       </View>
     );
   }
