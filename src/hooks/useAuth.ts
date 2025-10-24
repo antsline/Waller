@@ -1,11 +1,21 @@
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { Session, User } from '@supabase/supabase-js';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import * as AppleAuthentication from 'expo-apple-authentication';
-import * as Crypto from 'expo-crypto';
 import { supabase } from '../services/supabase';
 import Constants from 'expo-constants';
+
+// ネイティブモジュールは開発ビルドでのみ利用可能
+let GoogleSignin: any = null;
+let AppleAuthentication: any = null;
+let Crypto: any = null;
+
+try {
+  GoogleSignin = require('@react-native-google-signin/google-signin').GoogleSignin;
+  AppleAuthentication = require('expo-apple-authentication');
+  Crypto = require('expo-crypto');
+} catch (error) {
+  console.log('⚠️ ネイティブモジュールはExpo Goでは利用できません。開発ビルドが必要です。');
+}
 
 export interface AuthState {
   user: User | null;
@@ -65,10 +75,14 @@ export function useAuth() {
   useEffect(() => {
     // Google Sign-in初期化
     const googleClientId = Constants.expoConfig?.extra?.googleClientId;
-    if (googleClientId) {
-      GoogleSignin.configure({
-        webClientId: googleClientId,
-      });
+    if (googleClientId && GoogleSignin) {
+      try {
+        GoogleSignin.configure({
+          webClientId: googleClientId,
+        });
+      } catch (error) {
+        console.log('⚠️ Google Sign-in初期化エラー（開発ビルドが必要）');
+      }
     }
 
     // 初回セッション取得
@@ -142,6 +156,10 @@ export function useAuth() {
 
   // Google認証
   const signInWithGoogle = async () => {
+    if (!GoogleSignin) {
+      throw new Error('Google Sign-inは開発ビルドでのみ利用可能です。Expo Goでは使用できません。');
+    }
+
     try {
       console.log('🔐 Starting Google Sign-in...');
 
@@ -176,6 +194,10 @@ export function useAuth() {
 
   // Apple認証
   const signInWithApple = async () => {
+    if (!AppleAuthentication || !Crypto) {
+      throw new Error('Apple Sign-inは開発ビルドでのみ利用可能です。Expo Goでは使用できません。');
+    }
+
     try {
       console.log('🍎 Starting Apple Sign-in...');
 

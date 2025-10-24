@@ -159,11 +159,26 @@ export function FanProfileSetupScreen({ navigation }: Props) {
       await refetchProfile();
 
       console.log('🎉 プロフィール完了 - ホーム画面に遷移します');
+
+      // 少し待ってから遷移（認証状態の更新を待つ）
+      setTimeout(() => {
+        // RootNavigatorが自動的にMainに遷移する
+        setIsSubmitting(false);
+      }, 500);
     } catch (error: any) {
       console.error('プロフィール登録エラー:', error);
-      Alert.alert('エラー', error.message || '登録に失敗しました');
-    } finally {
-      setIsSubmitting(false);
+
+      // 既に登録済みの場合は、プロフィール再取得して遷移
+      if (error.message?.includes('duplicate key') || error.message?.includes('already exists')) {
+        console.log('⚠️ すでに登録済み - プロフィールを再取得して遷移');
+        await refetchProfile();
+        setTimeout(() => {
+          setIsSubmitting(false);
+        }, 500);
+      } else {
+        Alert.alert('エラー', error.message || '登録に失敗しました');
+        setIsSubmitting(false);
+      }
     }
   };
 

@@ -90,7 +90,7 @@ export function EditProfileScreen({ navigation }: Props) {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -104,21 +104,32 @@ export function EditProfileScreen({ navigation }: Props) {
   // 画像アップロード
   const uploadImage = async (uri: string): Promise<string | null> => {
     try {
-      const response = await fetch(uri);
-      const blob = await response.blob();
+      // 開発環境ではローカルURIをそのまま使用
+      if (__DEV__) {
+        console.log('⚠️ 開発環境: 画像アップロードをスキップしてローカルURIを使用');
+        return uri;
+      }
 
-      const fileExt = uri.split('.').pop();
+      // React Nativeでは直接ArrayBufferとして取得
+      const response = await fetch(uri);
+      const arrayBuffer = await response.arrayBuffer();
+      const fileData = new Uint8Array(arrayBuffer);
+
+      const fileExt = uri.split('.').pop() || 'jpg';
       const fileName = `${authUser!.id}-${Date.now()}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('user-content')
-        .upload(filePath, blob, {
+        .upload(filePath, fileData, {
           contentType: `image/${fileExt}`,
           upsert: true,
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw uploadError;
+      }
 
       const {
         data: { publicUrl },
@@ -127,6 +138,13 @@ export function EditProfileScreen({ navigation }: Props) {
       return publicUrl;
     } catch (error) {
       console.error('画像アップロードエラー:', error);
+
+      // 開発環境ではローカルURIを返す
+      if (__DEV__) {
+        console.log('⚠️ アップロード失敗、ローカルURIを使用');
+        return uri;
+      }
+
       Alert.alert('エラー', '画像のアップロードに失敗しました');
       return null;
     }

@@ -23,7 +23,7 @@ export function useImagePicker() {
 
       // 画像選択
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1], // 正方形
         quality: 0.8,
