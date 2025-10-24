@@ -1,50 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { AuthStackScreenProps } from '../../types/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { Toast } from '../../components/Toast';
 import { InlineError } from '../../components/InlineError';
-import Constants from 'expo-constants';
-import axios from 'axios';
 import { supabase } from '../../services/supabase';
 
 type Props = AuthStackScreenProps<'Login'>;
 
 export function LoginScreen({ navigation }: Props) {
-  const { signInWithEmail, signUpWithEmail, loading } = useAuth();
+  const { signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple, loading } = useAuth();
   const { toast, showToast, hideToast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-
-  const testConnection = async () => {
-    try {
-      const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl;
-      console.log('🧪 Testing connection to:', supabaseUrl);
-
-      if (!supabaseUrl) {
-        Alert.alert('エラー', 'Supabase URLが設定されていません');
-        return;
-      }
-
-      // axiosを使った接続テスト
-      const response = await axios.head(supabaseUrl, {
-        timeout: 10000,
-      });
-
-      console.log('✅ Connection test response status:', response.status);
-      Alert.alert('接続テスト成功', `ステータス: ${response.status}\nSupabaseへの接続が確認できました`);
-    } catch (error: any) {
-      console.error('❌ Connection test failed:', error);
-      const errorMsg = error.response
-        ? `ステータス: ${error.response.status}\n${error.message}`
-        : error.message || '接続できませんでした';
-      Alert.alert('接続テスト失敗', errorMsg);
-    }
-  };
+  const [isOAuthLoading, setIsOAuthLoading] = useState(false);
 
   const validateForm = (): boolean => {
     let isValid = true;
@@ -158,12 +141,47 @@ export function LoginScreen({ navigation }: Props) {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Waller</Text>
-      <Text style={styles.subtitle}>ウォールトランポリン特化型SNS</Text>
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsOAuthLoading(true);
+      await signInWithGoogle();
+      showToast('Googleでログインしました', 'success');
+    } catch (error: any) {
+      console.error('❌ Google Sign-in failed:', error);
+      showToast(error.message || 'Googleログインに失敗しました', 'error');
+    } finally {
+      setIsOAuthLoading(false);
+    }
+  };
 
-      <View style={styles.form}>
+  const handleAppleSignIn = async () => {
+    try {
+      setIsOAuthLoading(true);
+      await signInWithApple();
+      showToast('Appleでログインしました', 'success');
+    } catch (error: any) {
+      if (error.message === 'キャンセルされました') {
+        // ユーザーがキャンセルした場合はToastを表示しない
+        return;
+      }
+      console.error('❌ Apple Sign-in failed:', error);
+      showToast(error.message || 'Appleログインに失敗しました', 'error');
+    } finally {
+      setIsOAuthLoading(false);
+    }
+  };
+
+  return (
+    <ImageBackground
+      source={require('../../../assets/images/login-bg-2.png')}
+      style={styles.backgroundImage}
+      resizeMode="cover"
+    >
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <View style={styles.form}>
         <Text style={styles.label}>メールアドレス</Text>
         <TextInput
           style={[styles.input, emailError && styles.inputError]}
@@ -207,16 +225,33 @@ export function LoginScreen({ navigation }: Props) {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.testButton} onPress={testConnection}>
-          <Text style={styles.testButtonText}>
-            🧪 Supabase接続テスト
-          </Text>
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>または</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        <TouchableOpacity
+          style={styles.oauthButton}
+          onPress={handleGoogleSignIn}
+          disabled={loading || isOAuthLoading}
+        >
+          <Ionicons name="logo-google" size={18} color="#333" style={styles.oauthIcon} />
+          <Text style={styles.oauthButtonText}>Googleでログイン</Text>
         </TouchableOpacity>
 
-        <Text style={styles.devNote}>
-          💡 開発用：メール認証を使用しています{'\n'}
-          本番環境ではGoogle/Apple認証を実装予定
-        </Text>
+        {Platform.OS === 'ios' && (
+          <TouchableOpacity
+            style={[styles.oauthButton, styles.appleButton]}
+            onPress={handleAppleSignIn}
+            disabled={loading || isOAuthLoading}
+          >
+            <Ionicons name="logo-apple" size={18} color="#fff" style={styles.oauthIcon} />
+            <Text style={[styles.oauthButtonText, styles.appleButtonText]}>
+              Appleでログイン
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <Toast
@@ -225,86 +260,103 @@ export function LoginScreen({ navigation }: Props) {
         type={toast.type}
         onHide={hideToast}
       />
-    </View>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     padding: 24,
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 48,
+    justifyContent: 'flex-end',
   },
   form: {
     width: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 40,
   },
   label: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 6,
     color: '#333',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 8,
+    padding: 10,
+    fontSize: 14,
+    marginBottom: 6,
   },
   inputError: {
     borderColor: '#F44336',
   },
   button: {
     backgroundColor: '#FF6B00',
-    padding: 16,
+    padding: 12,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 6,
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   switchText: {
     color: '#FF6B00',
     textAlign: 'center',
-    marginTop: 16,
-    fontSize: 14,
+    marginTop: 12,
+    fontSize: 13,
   },
-  testButton: {
-    backgroundColor: '#f0f0f0',
-    padding: 12,
-    borderRadius: 8,
+  divider: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 16,
+    marginVertical: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#ddd',
+  },
+  dividerText: {
+    marginHorizontal: 12,
+    color: '#666',
+    fontSize: 12,
+  },
+  oauthButton: {
+    backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#ddd',
+    padding: 12,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
-  testButtonText: {
-    color: '#666',
+  oauthIcon: {
+    marginRight: 8,
+  },
+  oauthButtonText: {
+    color: '#333',
     fontSize: 14,
     fontWeight: '600',
   },
-  devNote: {
-    fontSize: 12,
-    color: '#999',
-    textAlign: 'center',
-    marginTop: 32,
-    lineHeight: 18,
+  appleButton: {
+    backgroundColor: '#000',
+    borderColor: '#000',
+  },
+  appleButtonText: {
+    color: '#fff',
   },
 });

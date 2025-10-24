@@ -16,14 +16,17 @@ module.exports = ({ config }) => {
     orientation: 'portrait',
     scheme: 'waller',
     userInterfaceStyle: 'automatic',
+    icon: './assets/images/logo.png',
     splash: {
-      resizeMode: 'contain',
+      image: './assets/images/login-bg-1.png',
+      resizeMode: 'cover',
       backgroundColor: '#ffffff',
     },
     assetBundlePatterns: ['**/*'],
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.waller.app',
+      icon: './assets/images/logo.png',
       infoPlist: {
         NSAppTransportSecurity: {
           NSAllowsArbitraryLoads: false,
@@ -38,7 +41,9 @@ module.exports = ({ config }) => {
       },
     },
     android: {
+      icon: './assets/images/logo.png',
       adaptiveIcon: {
+        foregroundImage: './assets/images/logo.png',
         backgroundColor: '#ffffff',
       },
       package: 'com.waller.app',
@@ -49,6 +54,7 @@ module.exports = ({ config }) => {
     extra: {
       supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
       supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+      googleClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
     },
   };
 };

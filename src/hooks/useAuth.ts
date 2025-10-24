@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import { Session, User } from '@supabase/supabase-js';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Crypto from 'expo-crypto';
 import { supabase } from '../services/supabase';
+import Constants from 'expo-constants';
 
 export interface AuthState {
   user: User | null;
@@ -58,6 +63,14 @@ export function useAuth() {
   };
 
   useEffect(() => {
+    // Google Sign-in初期化
+    const googleClientId = Constants.expoConfig?.extra?.googleClientId;
+    if (googleClientId) {
+      GoogleSignin.configure({
+        webClientId: googleClientId,
+      });
+    }
+
     // 初回セッション取得
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       const profileStatus = session?.user
@@ -127,38 +140,87 @@ export function useAuth() {
     }
   };
 
-  // Google認証（開発用：メール認証で代用）
+  // Google認証
   const signInWithGoogle = async () => {
     try {
-      // TODO: 本番環境ではOAuth設定後に以下のコードを使用
-      // const { data, error } = await supabase.auth.signInWithOAuth({
-      //   provider: 'google',
-      //   options: {
-        //     redirectTo: 'waller://auth/callback',
-      //   },
-      // });
+      console.log('🔐 Starting Google Sign-in...');
 
-      // 開発用：メール認証で代用
-      throw new Error('Google認証は本番環境で設定してください。開発中はsignInWithEmailを使用してください。');
+      // Google Sign-inフロー
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+
+      console.log('✅ Google Sign-in successful:', userInfo.data?.user.email);
+
+      if (!userInfo.data?.idToken) {
+        throw new Error('Google ID token not found');
+      }
+
+      // SupabaseでGoogle認証
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: userInfo.data.idToken,
+      });
+
+      if (error) {
+        console.error('❌ Supabase Google auth error:', error);
+        throw error;
+      }
+
+      console.log('✅ Supabase Google auth successful');
+      return data;
     } catch (error) {
+      console.error('❌ Google Sign-in error:', error);
       throw error;
     }
   };
 
-  // Apple認証（開発用：メール認証で代用）
+  // Apple認証
   const signInWithApple = async () => {
     try {
-      // TODO: 本番環境ではOAuth設定後に以下のコードを使用
-      // const { data, error } = await supabase.auth.signInWithOAuth({
-      //   provider: 'apple',
-      //   options: {
-      //     redirectTo: 'waller://auth/callback',
-      //   },
-      // });
+      console.log('🍎 Starting Apple Sign-in...');
 
-      // 開発用：メール認証で代用
-      throw new Error('Apple認証は本番環境で設定してください。開発中はsignInWithEmailを使用してください。');
-    } catch (error) {
+      // nonce生成
+      const nonce = Math.random().toString(36).substring(2, 10);
+      const hashedNonce = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        nonce
+      );
+
+      // Apple認証
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+        nonce: hashedNonce,
+      });
+
+      console.log('✅ Apple Sign-in successful');
+
+      if (!credential.identityToken) {
+        throw new Error('Apple identity token not found');
+      }
+
+      // SupabaseでApple認証
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'apple',
+        token: credential.identityToken,
+        nonce,
+      });
+
+      if (error) {
+        console.error('❌ Supabase Apple auth error:', error);
+        throw error;
+      }
+
+      console.log('✅ Supabase Apple auth successful');
+      return data;
+    } catch (error: any) {
+      if (error.code === 'ERR_REQUEST_CANCELED') {
+        console.log('ℹ️ User canceled Apple Sign-in');
+        throw new Error('キャンセルされました');
+      }
+      console.error('❌ Apple Sign-in error:', error);
       throw error;
     }
   };
