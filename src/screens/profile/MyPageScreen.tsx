@@ -1,32 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { MainTabScreenProps } from '../../types/navigation';
+import { MyPageStackScreenProps } from '../../types/navigation';
+import { ProfileScreen } from './ProfileScreen';
 
-type Props = MainTabScreenProps<'MyPage'>;
+type Props = MyPageStackScreenProps<'MyPageProfile'>;
 
 export function MyPageScreen({ navigation }: Props) {
+  // 自分のプロフィールを表示
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>マイページ</Text>
-      <Text style={styles.subtitle}>TODO: 実装予定</Text>
-    </View>
+    <ProfileScreen
+      navigation={navigation}
+      onPostPress={(postId) => {
+        navigation.navigate('PostDetail', { postId });
+      }}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 8,
-  },
-});

@@ -21,6 +21,15 @@ export type MainTabParamList = {
 export type HomeStackParamList = {
   HomeFeed: undefined;
   PostDetail: { postId: string };
+  UserProfile: { userId: string };
+};
+
+// MyPage Stack (プロフィール編集などを含む)
+export type MyPageStackParamList = {
+  MyPageProfile: undefined;
+  EditProfile: undefined;
+  PostDetail: { postId: string };
+  UserProfile: { userId: string };
 };
 
 // Root Stack
@@ -47,5 +56,10 @@ export type RootStackScreenProps<T extends keyof RootStackParamList> = NativeSta
 
 export type HomeStackScreenProps<T extends keyof HomeStackParamList> = NativeStackScreenProps<
   HomeStackParamList,
+  T
+>;
+
+export type MyPageStackScreenProps<T extends keyof MyPageStackParamList> = NativeStackScreenProps<
+  MyPageStackParamList,
   T
 >;

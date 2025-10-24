@@ -1,20 +1,29 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { HomeScreen } from '../screens/home/HomeScreen';
+import { MyPageScreen } from '../screens/profile/MyPageScreen';
+import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
 import { PostDetailScreen } from '../screens/post/PostDetailScreen';
 import { UserProfileScreen } from '../screens/profile/UserProfileScreen';
-import { HomeStackParamList } from '../types/navigation';
+import { MyPageStackParamList } from '../types/navigation';
 
-const Stack = createNativeStackNavigator<HomeStackParamList>();
+const Stack = createNativeStackNavigator<MyPageStackParamList>();
 
-export function HomeStack() {
+export function MyPageStack() {
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
       }}
     >
-      <Stack.Screen name="HomeFeed" component={HomeScreen} />
+      <Stack.Screen name="MyPageProfile" component={MyPageScreen} />
+      <Stack.Screen
+        name="EditProfile"
+        component={EditProfileScreen}
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
       <Stack.Screen
         name="PostDetail"
         component={PostDetailScreen}

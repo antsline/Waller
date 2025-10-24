@@ -14,15 +14,16 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HomeStackScreenProps } from '../../types/navigation';
+import { HomeStackScreenProps, MyPageStackScreenProps } from '../../types/navigation';
 import { FeedPost, SKILL_LEVEL_LABELS } from '../../types/feed.types';
 import { supabase } from '../../services/supabase';
 import { formatExperience } from '../../utils/experience';
 import { useAuth } from '../../hooks/useAuth';
 import { useDeletePost } from '../../hooks/useDeletePost';
 import { EditPostModal } from './EditPostModal';
+import { ReportModal } from '../report/ReportModal';
 
-type Props = HomeStackScreenProps<'PostDetail'>;
+type Props = HomeStackScreenProps<'PostDetail'> | MyPageStackScreenProps<'PostDetail'>;
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -38,6 +39,7 @@ export function PostDetailScreen({ route, navigation }: Props) {
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   // 投稿データを取得
   useEffect(() => {
@@ -211,8 +213,7 @@ export function PostDetailScreen({ route, navigation }: Props) {
               text: '通報',
               style: 'destructive',
               onPress: () => {
-                // TODO: 通報画面に遷移
-                console.log('通報');
+                setShowReportModal(true);
               },
             },
           ]),
@@ -232,8 +233,7 @@ export function PostDetailScreen({ route, navigation }: Props) {
   // プロフィール画面へ遷移
   const handleUserPress = () => {
     if (!post) return;
-    // TODO: プロフィール画面への遷移
-    console.log('プロフィール画面へ:', post.user.id);
+    navigation.navigate('UserProfile', { userId: post.user.id });
   };
 
   // ローディング中
@@ -374,6 +374,15 @@ export function PostDetailScreen({ route, navigation }: Props) {
           initialCategoryTag={post.category_tag}
           onClose={() => setShowEditModal(false)}
           onSaved={handleEditSaved}
+        />
+      )}
+
+      {/* 通報モーダル */}
+      {post && (
+        <ReportModal
+          visible={showReportModal}
+          postId={post.id}
+          onClose={() => setShowReportModal(false)}
         />
       )}
     </View>

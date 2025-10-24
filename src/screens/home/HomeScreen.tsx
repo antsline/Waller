@@ -65,8 +65,7 @@ export function HomeScreen({ navigation }: Props) {
         navigation.navigate('PostDetail', { postId: item.id });
       }}
       onUserPress={() => {
-        // TODO: プロフィール画面への遷移
-        console.log('User pressed:', item.user.id);
+        navigation.navigate('UserProfile', { userId: item.user.id });
       }}
     />
   );

@@ -61,6 +61,11 @@ export interface Database {
           skill_level: number
           team_name: string | null
           home_gym: string | null
+          main_location: string | null
+          twitter_url: string | null
+          instagram_url: string | null
+          youtube_url: string | null
+          is_open_to_collab: boolean
           created_at: string
           updated_at: string
         }
@@ -71,6 +76,11 @@ export interface Database {
           skill_level: number
           team_name?: string | null
           home_gym?: string | null
+          main_location?: string | null
+          twitter_url?: string | null
+          instagram_url?: string | null
+          youtube_url?: string | null
+          is_open_to_collab?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -81,6 +91,11 @@ export interface Database {
           skill_level?: number
           team_name?: string | null
           home_gym?: string | null
+          main_location?: string | null
+          twitter_url?: string | null
+          instagram_url?: string | null
+          youtube_url?: string | null
+          is_open_to_collab?: boolean
           created_at?: string
           updated_at?: string
         }

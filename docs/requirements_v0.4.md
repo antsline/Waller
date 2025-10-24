@@ -307,7 +307,7 @@
 | username | TEXT | ✅ | @ID、英数字+_、3〜15文字、重複不可 |
 | display_name | TEXT | ✅ | 表示名、1〜30文字 |
 | avatar_url | TEXT | - | アイコン画像URL |
-| bio | TEXT | - | 自己紹介、100文字まで |
+| bio | TEXT | - | **自己紹介、200文字まで**（Phase 0で100→200文字に拡張、100文字以上は折りたたみ表示） |
 | username_change_count | INTEGER | ✅ | @ID変更回数（最大1回） |
 | status | TEXT | ✅ | 'active' / 'suspended' / 'deleted' |
 | created_at | TIMESTAMPTZ | ✅ | 登録日時 |
@@ -322,8 +322,30 @@
 | experience_years | INTEGER | ✅ | 経験年数（年） |
 | experience_months | INTEGER | ✅ | 経験年数（月） |
 | skill_level | INTEGER | ✅ | 1〜5 |
-| team_name | TEXT | - | 所属チーム |
-| home_gym | TEXT | - | ホームジム |
+| team_name | TEXT | - | 所属チーム（50文字） |
+| home_gym | TEXT | - | ホームジム（50文字） |
+| main_location | TEXT | - | **活動地域（30文字）** Phase 0で追加 |
+| twitter_url | TEXT | - | **XのURL** Phase 0で追加 |
+| instagram_url | TEXT | - | **InstagramのURL** Phase 0で追加 |
+| youtube_url | TEXT | - | **YouTubeのURL** Phase 0で追加 |
+| is_open_to_collab | BOOLEAN | ✅ | **コラボ歓迎フラグ** Phase 0で追加（デフォルト: false） |
+| created_at | TIMESTAMPTZ | ✅ | 登録日時 |
+| updated_at | TIMESTAMPTZ | ✅ | 更新日時 |
+
+**Phase 0での拡張（濃いプロフィール対応）:**
+- 狭いコミュニティ向けに詳細なプロフィール情報を追加
+- SNSリンクでコミュニティ外での活動も把握可能
+- コラボ歓迎フラグで練習仲間を見つけやすく
+
+**Phase 1以降の追加予定項目:**
+- 得意技リスト（タグ形式、複数選択）
+- 現在練習中の技（テキスト、30文字）
+- 大会・イベント実績（テキスト、100文字）
+- 練習頻度（選択式: 週1回以下/週2-3回/週4-5回/ほぼ毎日）
+- 活動時間帯（選択式、複数可: 平日午前/午後/夜、土日祝）
+- ベストプレイピン留め機能（投稿から1つを選択）
+- レッスン対応可否（選択式: 不可/初心者のみ/相談可）
+- 始めたきっかけ（テキスト、50文字）
 
 ### 6-3. posts（投稿）
 
@@ -497,12 +519,16 @@ CREATE INDEX idx_posts_status ON posts(status);
 ### Phase 1（発見性強化）
 - タグ検索 / タグタップでフィルタ
 - カテゴリタグ別フィード
+- **フォロー機能（UIのみ、フォロー中フィードは無し）**
+  - フォロー/アンフォロー
+  - フォロワー/フォロー中リスト
+  - プロフィールにフォローボタン
+  - フォロー数カウント表示
 - 通知機能（軽量版）
 - プレイサマリー（月間投稿数、もらったリアクション総数）
 
 ### Phase 2（コミュニケーション解禁）
 - コメント機能（制限付き）
-- フォロー機能（UIのみ、フォロー中フィードは無し）
 - ファン投稿（承認型β）
 
 ### Phase 3（エンゲージメント強化）

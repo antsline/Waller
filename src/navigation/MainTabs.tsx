@@ -4,8 +4,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { MainTabParamList } from '../types/navigation';
 import { HomeStack } from './HomeStack';
+import { MyPageStack } from './MyPageStack';
 import { CreatePostScreen } from '../screens/post/CreatePostScreen';
-import { MyPageScreen } from '../screens/profile/MyPageScreen';
 import { useAuth } from '../hooks/useAuth';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -73,7 +73,7 @@ export function MainTabs() {
       )}
       <Tab.Screen
         name="MyPage"
-        component={MyPageScreen}
+        component={MyPageStack}
         options={{
           title: 'マイページ',
           tabBarIcon: ({ color, focused }) => (
