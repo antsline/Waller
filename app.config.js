@@ -10,7 +10,7 @@ module.exports = ({ config }) => {
 
   return {
     ...config,
-    name: 'Waller',
+    name: 'WALLER',
     slug: 'waller',
     version: '1.0.0',
     orientation: 'portrait',

@@ -42,7 +42,7 @@ App Store Connectでアプリを作成：
 2. 「マイApp」→「+」→「新規App」
 3. 以下を入力：
    - **プラットフォーム**: iOS
-   - **名前**: Waller
+   - **名前**: WALLER
    - **プライマリ言語**: 日本語
    - **バンドルID**: com.waller.app (app.config.jsと一致)
    - **SKU**: waller-app-001 (任意の一意な識別子)
@@ -114,11 +114,11 @@ eas submit --platform ios --latest
 
 ### 9. TestFlightでのテスト
 
-1. App Store Connect → マイApp → Waller を開く
+1. App Store Connect → マイApp → WALLER を開く
 2. TestFlight タブを選択
 3. 「App Store Connect ユーザー」セクションで自分を追加
 4. iPhoneでTestFlightアプリを開く
-5. Wallerをインストールしてテスト開始！
+5. WALLERをインストールしてテスト開始！
 
 ## トラブルシューティング
 
