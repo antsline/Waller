@@ -42,7 +42,6 @@ export function EditProfileScreen({ navigation }: Props) {
 
   // エラー状態
   const [displayNameError, setDisplayNameError] = useState('');
-  const [usernameError, setUsernameError] = useState('');
   const [bioError, setBioError] = useState('');
 
   // プレーヤー専用フィールド
@@ -137,7 +136,6 @@ export function EditProfileScreen({ navigation }: Props) {
   const validate = (): boolean => {
     let isValid = true;
     setDisplayNameError('');
-    setUsernameError('');
     setBioError('');
 
     if (!displayName.trim()) {
@@ -145,16 +143,7 @@ export function EditProfileScreen({ navigation }: Props) {
       isValid = false;
     }
 
-    if (!username.trim()) {
-      setUsernameError('ユーザーネームを入力してください');
-      isValid = false;
-    } else if (username.length < 3 || username.length > 20) {
-      setUsernameError('ユーザーネームは3〜20文字で入力してください');
-      isValid = false;
-    } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      setUsernameError('英数字とアンダースコアのみ使用できます');
-      isValid = false;
-    }
+    // usernameは変更不可なのでバリデーション不要
 
     if (bio.length > 200) {
       setBioError('自己紹介は200文字以内で入力してください');
@@ -327,23 +316,13 @@ export function EditProfileScreen({ navigation }: Props) {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>
-              ユーザーネーム <Text style={styles.required}>*</Text>
+              ユーザーネーム
             </Text>
-            <TextInput
-              style={[styles.input, usernameError && styles.inputError]}
-              value={username}
-              onChangeText={(text) => {
-                setUsername(text);
-                setUsernameError('');
-              }}
-              placeholder="taro_yamada"
-              autoCapitalize="none"
-              maxLength={20}
-            />
-            {!usernameError && (
-              <Text style={styles.hint}>英数字とアンダースコアのみ（3〜20文字）</Text>
-            )}
-            <InlineError message={usernameError} visible={!!usernameError} />
+            <View style={styles.readOnlyField}>
+              <Text style={styles.readOnlyPrefix}>@</Text>
+              <Text style={styles.readOnlyText}>{username}</Text>
+            </View>
+            <Text style={styles.hint}>※ ユーザーネームは変更できません</Text>
           </View>
 
           <View style={styles.inputGroup}>
@@ -652,6 +631,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9E9E9E',
     marginTop: 4,
+  },
+  readOnlyField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  readOnlyPrefix: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#9E9E9E',
+    marginRight: 4,
+  },
+  readOnlyText: {
+    fontSize: 16,
+    color: '#9E9E9E',
   },
   charCount: {
     fontSize: 12,

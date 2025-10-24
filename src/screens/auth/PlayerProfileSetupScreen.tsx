@@ -10,7 +10,9 @@ import {
   Image,
   ActivityIndicator,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { AuthStackScreenProps } from '../../types/navigation';
 import { useAuth } from '../../hooks/useAuth';
@@ -44,6 +46,7 @@ export function PlayerProfileSetupScreen({ navigation }: Props) {
   const [skillLevel, setSkillLevel] = useState<number | null>(null);
   const [team, setTeam] = useState('');
   const [gym, setGym] = useState('');
+  const [location, setLocation] = useState('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -212,16 +215,24 @@ export function PlayerProfileSetupScreen({ navigation }: Props) {
     !isSubmitting;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <Text style={styles.title}>プロフィールを作成</Text>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={0}
+    >
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
+        <Text style={styles.title}>プロフィールを作成</Text>
+        <Text style={styles.subtitle}>
+          後から設定画面でいつでも変更できます
+        </Text>
 
-      {/* アイコン選択 */}
+        {/* アイコン選択 */}
       <TouchableOpacity style={styles.avatarContainer} onPress={pickImage}>
         {imageUri ? (
           <Image source={{ uri: imageUri }} style={styles.avatar} />
         ) : (
           <View style={styles.avatarPlaceholder}>
-            <Text style={styles.avatarPlaceholderText}>📷</Text>
+            <Ionicons name="camera-outline" size={32} color="#9E9E9E" />
             <Text style={styles.avatarLabel}>アイコン選択</Text>
           </View>
         )}
@@ -236,7 +247,7 @@ export function PlayerProfileSetupScreen({ navigation }: Props) {
         style={styles.input}
         value={displayName}
         onChangeText={setDisplayName}
-        placeholder="タケシ"
+        placeholder="ジュン"
         maxLength={20}
       />
 
@@ -250,7 +261,7 @@ export function PlayerProfileSetupScreen({ navigation }: Props) {
           style={styles.usernameInput}
           value={username}
           onChangeText={handleUsernameChange}
-          placeholder="takeshi_123"
+          placeholder="jun_123"
           autoCapitalize="none"
           maxLength={15}
         />
@@ -266,6 +277,7 @@ export function PlayerProfileSetupScreen({ navigation }: Props) {
           <Text style={styles.helperText}>英数字と_、3〜15文字</Text>
         )}
       </View>
+      <Text style={styles.warningText}>※ 一度設定すると変更できません</Text>
 
       {/* 開始年月 */}
       <Text style={styles.label}>
@@ -367,6 +379,16 @@ export function PlayerProfileSetupScreen({ navigation }: Props) {
         maxLength={50}
       />
 
+      {/* 活動地域 */}
+      <Text style={styles.label}>活動地域 (任意)</Text>
+      <TextInput
+        style={styles.input}
+        value={location}
+        onChangeText={setLocation}
+        placeholder="東京都"
+        maxLength={50}
+      />
+
       {/* 登録ボタン */}
       <TouchableOpacity
         style={[styles.submitButton, !isFormValid && styles.submitButtonDisabled]}
@@ -379,7 +401,8 @@ export function PlayerProfileSetupScreen({ navigation }: Props) {
           <Text style={styles.submitButtonText}>登録完了</Text>
         )}
       </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -388,15 +411,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  scrollView: {
+    flex: 1,
+  },
   contentContainer: {
     padding: 24,
+    paddingTop: 60,
     paddingBottom: 40,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 24,
+    marginBottom: 8,
     textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 13,
+    color: '#9E9E9E',
+    textAlign: 'center',
+    marginBottom: 24,
   },
   avatarContainer: {
     alignSelf: 'center',
@@ -417,9 +450,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#E0E0E0',
     borderStyle: 'dashed',
-  },
-  avatarPlaceholderText: {
-    fontSize: 32,
   },
   avatarLabel: {
     fontSize: 12,
@@ -489,6 +519,11 @@ const styles = StyleSheet.create({
   successText: {
     fontSize: 12,
     color: '#4CAF50',
+  },
+  warningText: {
+    fontSize: 12,
+    color: '#FF6B00',
+    marginBottom: 16,
   },
   dateButton: {
     borderWidth: 1,
