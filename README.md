@@ -1,123 +1,27 @@
 # WALLER
 
-ウォールトランポリン特化型動画SNSアプリ
+Wall trampoline community platform.
 
-## 📋 プロジェクト概要
+## Vision
 
-WALLERは、ウォールトランポリンの「技」「挑戦」「成長」を気軽に共有できるコミュニティ型SNSです。
+Share challenges and growth in wall trampoline with the world.
+Accelerate the sport's popularity and lay the foundation for Olympic recognition.
 
-## 🚀 技術スタック
+## Status
 
-- **フロントエンド**: React Native (Expo SDK 51+)
-- **バックエンド**: Supabase (PostgreSQL + Auth + Storage)
-- **言語**: TypeScript
-- **状態管理**: Zustand + React Query
-- **ナビゲーション**: React Navigation
+**Rebuilding from scratch** based on [requirements v1.0](./docs/requirements_v1.0.md).
 
-## 📂 ディレクトリ構成
+## Tech Stack
 
-```
-waller/
-├── docs/                       # プロジェクトドキュメント
-│   ├── requirements_v0.4.md    # 要件定義書
-│   ├── tech_design.md          # 技術設計書
-│   ├── screen_design.md        # 画面設計書
-│   ├── dev_plan.md             # 開発計画書
-│   ├── phase0_tasks.md         # MVPタスク一覧
-│   └── implementation_guide.md # 実装ガイド
-│
-├── src/                        # ソースコード
-│   ├── screens/                # 画面コンポーネント
-│   │   ├── auth/               # 認証関連画面
-│   │   ├── home/               # ホーム・フィード画面
-│   │   ├── post/               # 投稿関連画面
-│   │   └── profile/            # プロフィール画面
-│   ├── components/             # 共通コンポーネント
-│   ├── hooks/                  # カスタムフック
-│   ├── services/               # API層・Supabase
-│   ├── stores/                 # グローバル状態管理
-│   ├── types/                  # 型定義
-│   └── utils/                  # ユーティリティ関数
-│
-├── supabase/                   # Supabase関連
-│   ├── migrations/             # DBマイグレーション
-│   └── functions/              # Edge Functions
-│
-├── assets/                     # 画像・フォント
-│   ├── images/
-│   └── fonts/
-│
-├── App.tsx                     # アプリエントリーポイント
-├── app.json                    # Expo設定
-├── package.json                # 依存関係
-└── tsconfig.json               # TypeScript設定
-```
+- **Mobile**: React Native (Expo) + TypeScript
+- **Backend**: Supabase (PostgreSQL + Auth + Storage)
+- **Web** (Phase 3): Next.js (SSR/SSG)
+- **i18n**: Japanese + English from day one
 
-## 🛠️ セットアップ
+## Docs
 
-### 1. 依存関係のインストール
+- [Requirements v1.0](./docs/requirements_v1.0.md)
 
-```bash
-npm install
-```
+## Archive
 
-### 2. 環境変数の設定
-
-`.env.example`をコピーして`.env`を作成し、Supabaseの認証情報を設定してください。
-
-```bash
-cp .env.example .env
-```
-
-### 3. Supabaseプロジェクトの設定
-
-1. [Supabase](https://supabase.com)でプロジェクトを作成
-2. `docs/tech_design.md`の手順に従ってデータベースを構築
-3. `.env`ファイルにプロジェクトURLとAnon Keyを設定
-
-### 4. 開発サーバーの起動
-
-```bash
-npm start
-```
-
-## 📱 開発
-
-### iOS
-
-```bash
-npm run ios
-```
-
-### Android
-
-```bash
-npm run android
-```
-
-### Web
-
-```bash
-npm run web
-```
-
-## 📚 ドキュメント
-
-詳細なドキュメントは`docs/`ディレクトリを参照してください:
-
-- [要件定義書](./docs/requirements_v0.4.md)
-- [技術設計書](./docs/tech_design.md)
-- [画面設計書](./docs/screen_design.md)
-- [開発計画書](./docs/dev_plan.md)
-- [MVPタスク一覧](./docs/phase0_tasks.md)
-- [実装ガイド](./docs/implementation_guide.md)
-
-## 🎯 現在のフェーズ
-
-**Phase 0 (MVP開発中)**
-
-目標: 基本的な動画投稿・閲覧・リアクション機能の実装
-
-## 📄 ライセンス
-
-Private Project
+Previous v0 code is preserved in `_archive/v0/` (git-ignored) for reference.

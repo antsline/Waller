@@ -39,3 +39,6 @@ coverage/
 
 # TypeScript
 *.tsbuildinfo
+
+# Archive (v0 legacy code)
+_archive/
