@@ -78,22 +78,57 @@ npm run build:dev
 | `npm run build:dev` | EAS development build (iOS) |
 | `npm run build:preview` | EAS preview build (internal distribution) |
 | `npm run build:prod` | EAS production build |
+| `npm test` | Run all tests with Jest |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run test:coverage` | Run tests with coverage report |
 
 ## Project Structure
 
 ```
 src/
-  components/ui/   # Reusable UI components (Button, TextInput, Avatar, etc.)
+  components/
+    ui/            # Reusable UI components (Button, TextInput, Avatar, Tag, etc.)
+    ClipCard.tsx   # Instagram-style feed card (full-width video)
+    ClipPlayer.tsx # expo-av video player with auto-play
+    ClapButton.tsx # Clap icon with particle animation
+    ClapParticles.tsx # Orange particle burst (Animated API)
+    MoodTag.tsx    # Mood display tag with i18n
+    MoodSelector.tsx # 5-pill mood selection
+    TrickTag.tsx   # #TrickName display tag
+    TrickSelector.tsx # Search + multi-select + inline registration
+    VideoPreview.tsx  # Thumbnail preview with play icon
+    UploadProgress.tsx # Upload step indicator modal
   constants/       # Design system (colors, typography, spacing, config)
-  hooks/           # Custom hooks (useAuth, useProfile, useDebounce, etc.)
+  hooks/           # Custom hooks
+    useAuth.ts     # Google/Apple OAuth
+    useProfile.ts  # Profile CRUD
+    useClips.ts    # Feed infinite query (useInfiniteQuery)
+    useClap.ts     # Clap state machine (tap/rapid/cancel, debounced sync)
+    useCreateClip.ts # Multi-step upload mutation
+    useTricks.ts   # Trick search query
+    useCreateTrick.ts # Inline trick registration
+    useVideoPicker.ts # Video selection + validation + thumbnail
+    useViewability.ts # FlatList auto-play tracking
+    useClipMenu.ts # iOS ActionSheet / Android Alert menu
+    useDebounce.ts # Generic value debounce
+    useImagePicker.ts # Avatar image picker
   i18n/            # Internationalization (ja.json, en.json)
   lib/             # Supabase client (expo-secure-store for session)
   navigation/      # React Navigation (RootNavigator, MainTabs, Stacks)
-  screens/         # Screen components organized by feature
-  services/        # Supabase Storage helpers
-  stores/          # Zustand stores (authStore)
+  screens/
+    auth/          # LoginScreen, ProfileSetupScreen
+    clip/          # CreateClipScreen
+    home/          # FeedScreen, ClipDetailScreen
+    dictionary/    # TrickListScreen (placeholder)
+    mypage/        # MyPageScreen (placeholder)
+  services/
+    storage.ts     # Supabase Storage upload/delete helpers
+    video.ts       # Video validation + thumbnail generation
+  stores/
+    authStore.ts   # Auth session (Zustand)
+    clipUploadStore.ts # Upload progress tracking (Zustand)
   types/           # TypeScript types (database, models, navigation)
-  utils/           # Zod validation schemas, utilities
+  utils/           # Zod validation schemas
 ```
 
 ## Development Workflow
@@ -192,6 +227,11 @@ Orange (`#FF8C00`) is used only for:
 - Storage upload paths validated with UUID schema (prevents path traversal)
 - User cannot set `status` or `username_change_count` via client (excluded from insert payload)
 - All user inputs validated with Zod before database operations
+- PostgREST filter values escaped via `escapePostgrestValue` (prevents filter injection)
+- Navigation route params validated with Zod UUID schema
+- Error messages are generic (no Supabase internal details leaked to UI)
+- Clap count validated both client-side (Zod) and server-side (CHECK constraint)
+- MIME type validation is server-side authoritative (Supabase storage bucket config)
 
 ## Database Schema
 
@@ -222,9 +262,41 @@ All trigger functions use `SECURITY DEFINER SET search_path = public` for RLS co
 
 Test coverage target: 80%+
 
-Test types (all required):
-- Unit tests: validation schemas, utilities, hooks
-- Integration tests: Supabase queries, auth flow
-- E2E tests: critical user flows
+### Infrastructure
 
-(Testing infrastructure to be set up in a future sprint)
+- **Framework:** Jest 29 + jest-expo/ios preset
+- **Helpers:** @testing-library/react-native
+- **Config:** `jest.config.js` (module aliases, transform patterns)
+- **Setup:** `jest.setup.js` (expo module mocks, Supabase mock)
+
+### Running tests
+
+```bash
+npm test                  # Run all tests
+npm run test:watch        # Watch mode
+npm run test:coverage     # Coverage report
+```
+
+### Test types (all required)
+
+- **Unit tests:** validation schemas, video service, hook state machines
+- **Integration tests:** Supabase queries (mocked), multi-step upload flow
+- **E2E tests:** critical user flows (planned for Sprint 7)
+
+### Test file locations
+
+```
+src/services/__tests__/video.test.ts    # validateVideo edge cases
+src/hooks/__tests__/useClap.test.ts     # Clap state machine (tap/rapid/cancel)
+```
+
+### Writing tests
+
+Follow TDD: write test first (RED), implement (GREEN), refactor (IMPROVE).
+
+```typescript
+// Mock Supabase in test files
+jest.mock('@/lib/supabase', () => ({
+  supabase: { from: jest.fn(() => ({ ... })) }
+}))
+```

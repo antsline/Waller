@@ -86,7 +86,14 @@
     "delete_title": "Delete Clip",
     "delete_confirm": "Are you sure you want to delete this clip?",
     "delete_limit_reached": "Daily delete limit reached. Please try again tomorrow",
-    "video_not_editable": "Video cannot be changed"
+    "video_not_editable": "Video cannot be changed",
+    "upload_video": "Uploading video...",
+    "upload_thumbnail": "Generating thumbnail...",
+    "upload_saving": "Saving...",
+    "upload_complete": "Post complete",
+    "register_trick": "Register this trick",
+    "no_tricks_found": "No tricks found",
+    "selected_tricks": "Selected tricks"
   },
   "mood": {
     "challenging": "Challenging",
@@ -151,6 +158,9 @@
     "load_failed": "Failed to load",
     "save_failed": "Failed to save",
     "clap_failed": "Failed to send",
-    "profile_update_failed": "Failed to update profile"
+    "profile_update_failed": "Failed to update profile",
+    "video_duration_short": "Video is too short",
+    "video_duration_long": "Video is too long",
+    "video_no_uri": "No video selected"
   }
 }

@@ -86,7 +86,14 @@
     "delete_title": "クリップを削除",
     "delete_confirm": "このクリップを削除しますか？",
     "delete_limit_reached": "本日の削除上限に達しました。明日以降に再度お試しください",
-    "video_not_editable": "動画は変更できません"
+    "video_not_editable": "動画は変更できません",
+    "upload_video": "動画をアップロード中...",
+    "upload_thumbnail": "サムネイル生成中...",
+    "upload_saving": "保存中...",
+    "upload_complete": "投稿完了",
+    "register_trick": "この技を登録",
+    "no_tricks_found": "技が見つかりません",
+    "selected_tricks": "選択した技"
   },
   "mood": {
     "challenging": "挑戦中",
@@ -151,6 +158,9 @@
     "load_failed": "読み込みに失敗しました",
     "save_failed": "保存に失敗しました",
     "clap_failed": "送信に失敗しました",
-    "profile_update_failed": "プロフィールの更新に失敗しました"
+    "profile_update_failed": "プロフィールの更新に失敗しました",
+    "video_duration_short": "動画が短すぎます",
+    "video_duration_long": "動画が長すぎます",
+    "video_no_uri": "動画が選択されていません"
   }
 }

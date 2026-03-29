@@ -51,6 +51,11 @@ export function MainTabs() {
         name="CreateClip"
         component={CreateClipScreen}
         options={{
+          headerShown: true,
+          headerTitle: t('clip.create_title'),
+          headerStyle: { backgroundColor: colors.background },
+          headerTintColor: colors.text,
+          headerShadowVisible: false,
           title: t('tabs.create'),
           tabBarIcon: ({ size }) => <PlusCircle size={size} color={colors.accent} strokeWidth={2} />,
         }}

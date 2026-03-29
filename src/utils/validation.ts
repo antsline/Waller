@@ -40,8 +40,8 @@ export const clipSchema = z.object({
 
 export const trickSchema = z.object({
   name_original: z.string().min(1).max(100),
-  name_en: z.string().nullable().optional(),
-  name_ja: z.string().nullable().optional(),
+  name_en: z.string().max(100).nullable().optional(),
+  name_ja: z.string().max(100).nullable().optional(),
   category: z.enum(['flip', 'twist', 'combo', 'original', 'other']),
 })
 
@@ -54,6 +54,21 @@ export const reportSchema = z.object({
 
 export type ProfileSetupInput = z.infer<typeof profileSetupSchema>
 export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>
+export const videoPickerSchema = z.object({
+  uri: z.string().min(1),
+  duration: z.number().min(config.clip.minDuration).max(config.clip.maxDuration).nullable(),
+  fileSize: z.number().max(config.clip.maxSizeMB * 1024 * 1024).nullable(),
+})
+
+export const createClipInputSchema = z.object({
+  mood: z.enum(['challenging', 'landed', 'training', 'showcase', 'first_time']),
+  caption: z.string().max(config.clip.maxCaptionLength).nullable().optional(),
+  facility_tag: z.string().max(50).nullable().optional(),
+  trick_ids: z.array(z.string().uuid()).optional(),
+})
+
 export type ClipInput = z.infer<typeof clipSchema>
 export type TrickInput = z.infer<typeof trickSchema>
 export type ReportInput = z.infer<typeof reportSchema>
+export type VideoPickerInput = z.infer<typeof videoPickerSchema>
+export type CreateClipInput = z.infer<typeof createClipInputSchema>

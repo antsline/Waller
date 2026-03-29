@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { useTranslation } from 'react-i18next'
 import type { HomeStackParamList } from '@/types/navigation'
 import { FeedScreen } from '@/screens/home/FeedScreen'
+import { ClipDetailScreen } from '@/screens/home/ClipDetailScreen'
 import { colors } from '@/constants/colors'
 
 const Stack = createNativeStackNavigator<HomeStackParamList>()
@@ -22,6 +23,11 @@ export function HomeStack() {
         name="Feed"
         component={FeedScreen}
         options={{ title: t('feed.title') }}
+      />
+      <Stack.Screen
+        name="ClipDetail"
+        component={ClipDetailScreen}
+        options={{ title: '' }}
       />
     </Stack.Navigator>
   )

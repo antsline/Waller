@@ -30,6 +30,8 @@ async function uploadFile(
     throw new Error('File too large')
   }
 
+  // Client-side MIME check is best-effort; blob.type is unreliable for local file URIs on mobile.
+  // Server-side enforcement via Supabase storage bucket allowed_mime_types is authoritative.
   if (blob.type && blob.type !== contentType && blob.type !== 'application/octet-stream') {
     throw new Error(`Invalid file type: expected ${contentType}, got ${blob.type}`)
   }

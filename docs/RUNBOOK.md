@@ -37,11 +37,15 @@ npx eas submit --platform android --latest
 
 - [ ] `npm run typecheck` passes with no errors
 - [ ] `npm run lint` passes with no errors
+- [ ] `npm test` passes with no failures
 - [ ] All environment variables set in EAS secrets
 - [ ] Database migrations applied to production Supabase
 - [ ] Storage buckets created with correct policies
 - [ ] No `console.log` in production code
 - [ ] i18n: all screens tested in both Japanese and English
+- [ ] Video upload: test clip creation end-to-end (1-15s, under 50MB)
+- [ ] Feed: verify auto-play, pagination, pull-to-refresh
+- [ ] Clap: verify tap/rapid-tap/cancel behavior
 - [ ] Google OAuth: `iosUrlScheme` in `app.json` set to actual reversed client ID
 - [ ] Google OAuth: `EXPO_PUBLIC_GOOGLE_CLIENT_ID` and `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` configured
 - [ ] Supabase Auth: Google and Apple providers enabled in Supabase Dashboard
@@ -187,6 +191,36 @@ npm run build:dev
 1. Check file size and type on client
 2. Verify storage policies in Supabase Dashboard
 3. Check Supabase logs for specific error
+
+### Video auto-play not working in feed
+
+**Cause:** Multiple Video components competing for playback, or viewability tracking issue.
+
+**Debug:**
+1. Verify `viewabilityConfig` is a stable reference (useRef)
+2. Check `onViewableItemsChanged` callback is also stable (useRef)
+3. Ensure FlatList `windowSize` is set (default: 5)
+4. Check device memory - video playback is resource-intensive
+
+### Feed performance issues (jank on scroll)
+
+**Cause:** Re-renders triggered by `visibleIndex` changes.
+
+**Fix:**
+1. `renderItem` must NOT have `visibleIndex` in its dependency array
+2. Use `extraData` prop on FlatList for visibility changes
+3. Use `visibleIndexRef` pattern (ref updated per render, not in deps)
+4. Verify all ClipCard sub-components use `React.memo`
+
+### Clap count not syncing
+
+**Cause:** Debounce timer fired after unmount, or optimistic update rollback.
+
+**Debug:**
+1. Check network tab for clap upsert requests
+2. Verify `claps` table RLS policy allows upsert for current user
+3. Check `clip_counters` trigger is firing (see trigger verification below)
+4. Check clap count CHECK constraint (1-10): values outside range are rejected
 
 ### Counter out of sync
 
