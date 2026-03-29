@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "WALLER",
+    "slug": "waller",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "scheme": "waller",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "backgroundColor": "#FFFFFF"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.waller.app"
+    },
+    "android": {
+      "package": "com.waller.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6996000d-4b6b-4135-9f57-82f55226a20d"
+      }
+    },
+    "plugins": [
+      "expo-apple-authentication"
+    ]
+  }
+}
