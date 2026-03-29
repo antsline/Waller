@@ -42,6 +42,9 @@ npx eas submit --platform android --latest
 - [ ] Storage buckets created with correct policies
 - [ ] No `console.log` in production code
 - [ ] i18n: all screens tested in both Japanese and English
+- [ ] Google OAuth: `iosUrlScheme` in `app.json` set to actual reversed client ID
+- [ ] Google OAuth: `EXPO_PUBLIC_GOOGLE_CLIENT_ID` and `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` configured
+- [ ] Supabase Auth: Google and Apple providers enabled in Supabase Dashboard
 
 ## Database Operations
 
@@ -92,6 +95,13 @@ FROM storage.buckets;
 
 Expected buckets: `clips`, `avatars`, `best-plays`.
 
+### Enable OAuth Providers
+
+In Supabase Dashboard > Authentication > Providers:
+
+1. **Google**: Enable, paste Web Client ID and Client Secret
+2. **Apple**: Enable, paste Service ID, Team ID, Key ID, and Private Key
+
 ## Monitoring
 
 ### Key Metrics to Watch
@@ -128,6 +138,25 @@ Track monthly costs in Supabase Dashboard:
 npm run build:dev
 ```
 
+### Google Sign-In fails on iOS
+
+**Cause:** `iosUrlScheme` in `app.json` is a placeholder or incorrect.
+
+**Fix:**
+1. Get the iOS client ID from Google Cloud Console
+2. Reverse it (e.g., `com.googleusercontent.apps.123456` becomes the URL scheme)
+3. Update `app.json` plugins section with the correct reversed client ID
+4. Rebuild: `npm run build:dev`
+
+### Apple Sign-In fails
+
+**Cause:** Apple Sign-In not configured in Supabase or app capabilities.
+
+**Fix:**
+1. Verify Apple provider is enabled in Supabase Dashboard
+2. Verify `expo-apple-authentication` is in `app.json` plugins
+3. Verify the app has the "Sign in with Apple" capability in Apple Developer Console
+
 ### Supabase connection fails
 
 **Cause:** Missing or incorrect environment variables.
@@ -136,6 +165,15 @@ npm run build:dev
 1. `.env` file exists with correct values
 2. Variables are prefixed with `EXPO_PUBLIC_`
 3. Supabase project is active (not paused)
+
+### Session not persisting
+
+**Cause:** expo-secure-store issue on specific device/OS.
+
+**Debug:**
+1. Check device logs for SecureStore errors
+2. Verify `expo-secure-store` plugin is in `app.json`
+3. Test on a different device to isolate
 
 ### Clip upload fails
 

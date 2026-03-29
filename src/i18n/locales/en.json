@@ -51,7 +51,16 @@
     "best_play_add": "Add",
     "best_play_replace": "Replace",
     "best_play_title_placeholder": "Title (up to 50 characters)",
-    "clips": "CLIPS"
+    "clips": "CLIPS",
+    "username_checking": "Checking...",
+    "username_available": "Available",
+    "avatar_too_large": "Image must be under 5MB"
+  },
+  "tabs": {
+    "home": "Home",
+    "dictionary": "Dictionary",
+    "create": "Post",
+    "mypage": "My Page"
   },
   "feed": {
     "title": "Feed",

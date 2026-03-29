@@ -51,7 +51,16 @@
     "best_play_add": "追加",
     "best_play_replace": "入替",
     "best_play_title_placeholder": "タイトル（50文字まで）",
-    "clips": "CLIPS"
+    "clips": "CLIPS",
+    "username_checking": "確認中...",
+    "username_available": "利用可能",
+    "avatar_too_large": "画像は5MB以下にしてください"
+  },
+  "tabs": {
+    "home": "ホーム",
+    "dictionary": "技辞典",
+    "create": "投稿",
+    "mypage": "マイページ"
   },
   "feed": {
     "title": "フィード",

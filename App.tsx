@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { I18nextProvider } from 'react-i18next'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
+import { RootNavigator } from '@/navigation/RootNavigator'
 import i18n from '@/i18n'
 
 const queryClient = new QueryClient({
@@ -15,11 +16,6 @@ const queryClient = new QueryClient({
   },
 })
 
-function RootPlaceholder() {
-  // RootNavigator will replace this in Sprint 2
-  return null
-}
-
 export default function App() {
   return (
     <ErrorBoundary>
@@ -27,7 +23,7 @@ export default function App() {
         <QueryClientProvider client={queryClient}>
           <SafeAreaProvider>
             <StatusBar style="dark" />
-            <RootPlaceholder />
+            <RootNavigator />
           </SafeAreaProvider>
         </QueryClientProvider>
       </I18nextProvider>

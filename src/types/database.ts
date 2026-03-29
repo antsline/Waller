@@ -11,6 +11,8 @@ import type {
 
 export interface Database {
   public: {
+    Views: Record<string, never>
+    Functions: Record<string, never>
     Tables: {
       users: {
         Row: {
@@ -61,6 +63,7 @@ export interface Database {
           status?: UserStatus
           last_login_at?: string | null
         }
+        Relationships: []
       }
       tricks: {
         Row: {
@@ -98,6 +101,7 @@ export interface Database {
           clip_count?: number
           challenger_count?: number
         }
+        Relationships: []
       }
       clips: {
         Row: {
@@ -134,6 +138,7 @@ export interface Database {
           facility_tag?: string | null
           status?: ClipStatus
         }
+        Relationships: []
       }
       best_plays: {
         Row: {
@@ -170,6 +175,7 @@ export interface Database {
           facility_tag?: string | null
           sort_order?: number
         }
+        Relationships: []
       }
       best_play_tricks: {
         Row: {
@@ -183,6 +189,7 @@ export interface Database {
           created_at?: string
         }
         Update: never
+        Relationships: []
       }
       clip_tricks: {
         Row: {
@@ -196,6 +203,7 @@ export interface Database {
           created_at?: string
         }
         Update: never
+        Relationships: []
       }
       user_tricks: {
         Row: {
@@ -218,6 +226,7 @@ export interface Database {
           status?: TrickStatus
           first_landed_at?: string | null
         }
+        Relationships: []
       }
       claps: {
         Row: {
@@ -239,6 +248,7 @@ export interface Database {
         Update: {
           count?: number
         }
+        Relationships: []
       }
       clip_counters: {
         Row: {
@@ -261,6 +271,7 @@ export interface Database {
           clap_total?: number
           comment_count?: number
         }
+        Relationships: []
       }
       reports: {
         Row: {
@@ -286,6 +297,7 @@ export interface Database {
         Update: {
           status?: ReportStatus
         }
+        Relationships: []
       }
       deletion_logs: {
         Row: {
@@ -301,6 +313,7 @@ export interface Database {
           deleted_at?: string
         }
         Update: never
+        Relationships: []
       }
     }
   }

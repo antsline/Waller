@@ -32,7 +32,7 @@ cp .env.example .env
 | `EXPO_PUBLIC_SUPABASE_URL` | Supabase project URL | `https://xxxxx.supabase.co` |
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | JWT string |
 | `EXPO_PUBLIC_GOOGLE_CLIENT_ID` | Google OAuth web client ID | `xxxxx.apps.googleusercontent.com` |
-| `EXPO_PUBLIC_APPLE_CLIENT_ID` | Apple Sign-In service ID | `com.waller.app` |
+| `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` | Google OAuth iOS client ID | `xxxxx.apps.googleusercontent.com` |
 
 ### 3. Set up Supabase database
 
@@ -45,7 +45,15 @@ supabase/migrations/003_create_rls_policies.sql
 supabase/migrations/004_create_storage.sql
 ```
 
-### 4. Start development
+### 4. Configure Google OAuth
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create OAuth 2.0 credentials (Web client and iOS client)
+3. Set the web client ID as `EXPO_PUBLIC_GOOGLE_CLIENT_ID`
+4. Set the iOS client ID as `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`
+5. Update `app.json` `iosUrlScheme` with the reversed iOS client ID
+
+### 5. Start development
 
 ```bash
 npm start
@@ -64,11 +72,29 @@ npm run build:dev
 | `npm start` | Start Expo dev server |
 | `npm run ios` | Start on iOS simulator |
 | `npm run android` | Start on Android emulator |
+| `npm run web` | Start web version |
 | `npm run lint` | Lint TypeScript files with ESLint |
 | `npm run typecheck` | Type check without emitting |
-| `npm run build:dev` | EAS development build (iOS simulator) |
+| `npm run build:dev` | EAS development build (iOS) |
 | `npm run build:preview` | EAS preview build (internal distribution) |
 | `npm run build:prod` | EAS production build |
+
+## Project Structure
+
+```
+src/
+  components/ui/   # Reusable UI components (Button, TextInput, Avatar, etc.)
+  constants/       # Design system (colors, typography, spacing, config)
+  hooks/           # Custom hooks (useAuth, useProfile, useDebounce, etc.)
+  i18n/            # Internationalization (ja.json, en.json)
+  lib/             # Supabase client (expo-secure-store for session)
+  navigation/      # React Navigation (RootNavigator, MainTabs, Stacks)
+  screens/         # Screen components organized by feature
+  services/        # Supabase Storage helpers
+  stores/          # Zustand stores (authStore)
+  types/           # TypeScript types (database, models, navigation)
+  utils/           # Zod validation schemas, utilities
+```
 
 ## Development Workflow
 
@@ -137,6 +163,35 @@ Orange (`#FF8C00`) is used only for:
 - Active tab indicator
 - "Landed" mood tag
 - Notification badges
+
+## Authentication Architecture
+
+### Flow
+
+1. User taps Google/Apple sign-in on `LoginScreen`
+2. Native SDK obtains OAuth `idToken`
+3. Token is passed to `supabase.auth.signInWithIdToken()`
+4. Supabase Auth creates/validates session
+5. Session stored in expo-secure-store (encrypted)
+6. `onAuthStateChange` listener updates Zustand store
+7. `RootNavigator` renders appropriate screen based on auth state
+
+### Navigation routing
+
+| State | Screen |
+|---|---|
+| Loading | Spinner (full screen) |
+| Not authenticated | LoginScreen |
+| Authenticated, no profile | ProfileSetupScreen |
+| Authenticated + profile complete | MainTabs |
+
+### Security notes
+
+- Session tokens stored in `expo-secure-store` (encrypted on-device)
+- Apple Sign-In uses SHA256 hashed nonce (required by Apple)
+- Storage upload paths validated with UUID schema (prevents path traversal)
+- User cannot set `status` or `username_change_count` via client (excluded from insert payload)
+- All user inputs validated with Zod before database operations
 
 ## Database Schema
 
