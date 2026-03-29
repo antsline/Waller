@@ -8,16 +8,16 @@
 -- ====================================
 
 -- clips bucket (clip videos and thumbnails)
-INSERT INTO storage.buckets (id, name, public, file_size_limit)
-VALUES ('clips', 'clips', true, 52428800); -- 50MB limit
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('clips', 'clips', true, 52428800, ARRAY['video/mp4', 'video/quicktime', 'image/jpeg', 'image/png']); -- 50MB, video + thumbnails
 
 -- avatars bucket (profile images)
-INSERT INTO storage.buckets (id, name, public, file_size_limit)
-VALUES ('avatars', 'avatars', true, 5242880); -- 5MB limit
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('avatars', 'avatars', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp']); -- 5MB, images only
 
 -- best-plays bucket (best play videos and thumbnails)
-INSERT INTO storage.buckets (id, name, public, file_size_limit)
-VALUES ('best-plays', 'best-plays', true, 104857600); -- 100MB limit
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('best-plays', 'best-plays', true, 104857600, ARRAY['video/mp4', 'video/quicktime', 'image/jpeg', 'image/png']); -- 100MB, video + thumbnails
 
 -- ====================================
 -- clips bucket policies

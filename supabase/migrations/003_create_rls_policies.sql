@@ -117,13 +117,23 @@ CREATE POLICY "clip_tricks_select_public"
   ON clip_tricks FOR SELECT
   USING (true);
 
-CREATE POLICY "clip_tricks_insert_authenticated"
+CREATE POLICY "clip_tricks_insert_own"
   ON clip_tricks FOR INSERT
-  WITH CHECK (auth.uid() IS NOT NULL);
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM clips
+      WHERE id = clip_id AND user_id = auth.uid()
+    )
+  );
 
-CREATE POLICY "clip_tricks_delete_authenticated"
+CREATE POLICY "clip_tricks_delete_own"
   ON clip_tricks FOR DELETE
-  USING (auth.uid() IS NOT NULL);
+  USING (
+    EXISTS (
+      SELECT 1 FROM clips
+      WHERE id = clip_id AND user_id = auth.uid()
+    )
+  );
 
 -- ====================================
 -- user_tricks: public read, authenticated insert/update (own only)

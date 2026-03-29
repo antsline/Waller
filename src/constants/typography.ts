@@ -1,4 +1,5 @@
 import { Platform } from 'react-native'
+import { colors } from './colors'
 
 const fontFamily = Platform.select({
   ios: 'System',
@@ -12,38 +13,38 @@ export const typography = {
     fontSize: 22,
     fontWeight: '700' as const,
     letterSpacing: -0.5,
-    color: '#1A1A1A',
+    color: colors.text,
   },
   headingLarge: {
     fontFamily,
     fontSize: 24,
     fontWeight: '700' as const,
     letterSpacing: -0.5,
-    color: '#1A1A1A',
+    color: colors.text,
   },
   body: {
     fontFamily,
     fontSize: 15,
     fontWeight: '400' as const,
-    color: '#1A1A1A',
+    color: colors.text,
   },
   bodySmall: {
     fontFamily,
     fontSize: 14,
     fontWeight: '400' as const,
-    color: '#1A1A1A',
+    color: colors.text,
   },
   sub: {
     fontFamily,
     fontSize: 13,
     fontWeight: '400' as const,
-    color: '#6B6B6B',
+    color: colors.textSecondary,
   },
   subSmall: {
     fontFamily,
     fontSize: 12,
     fontWeight: '400' as const,
-    color: '#6B6B6B',
+    color: colors.textSecondary,
   },
   button: {
     fontFamily,
@@ -54,12 +55,12 @@ export const typography = {
     fontFamily,
     fontSize: 13,
     fontWeight: '600' as const,
-    color: '#1A1A1A',
+    color: colors.text,
   },
   number: {
     fontFamily,
     fontSize: 18,
     fontWeight: '700' as const,
-    color: '#1A1A1A',
+    color: colors.text,
   },
 } as const

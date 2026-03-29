@@ -12,7 +12,7 @@ BEGIN
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE TRIGGER update_users_updated_at
   BEFORE UPDATE ON users
@@ -52,7 +52,7 @@ BEGIN
   VALUES (NEW.id);
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE TRIGGER trigger_initialize_clip_counters
   AFTER INSERT ON clips
@@ -86,7 +86,7 @@ BEGIN
     RETURN OLD;
   END IF;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE TRIGGER trigger_update_clap_counters
   AFTER INSERT OR UPDATE OR DELETE ON claps
@@ -120,7 +120,7 @@ BEGIN
 
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE TRIGGER trigger_auto_hide_reported_clip
   AFTER INSERT ON reports
@@ -188,7 +188,7 @@ BEGIN
 
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE TRIGGER trigger_update_user_tricks_from_clip
   AFTER INSERT ON clip_tricks
@@ -218,7 +218,7 @@ BEGIN
     RETURN OLD;
   END IF;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE TRIGGER trigger_update_trick_clip_count
   AFTER INSERT OR DELETE ON clip_tricks
@@ -246,7 +246,7 @@ BEGIN
     RETURN NEW;
   END IF;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE TRIGGER trigger_update_trick_challenger_count
   AFTER INSERT OR DELETE OR UPDATE ON user_tricks

@@ -126,7 +126,7 @@ CREATE TABLE best_plays (
 );
 
 CREATE INDEX idx_best_plays_user_id ON best_plays(user_id);
-CREATE INDEX idx_best_plays_sort_order ON best_plays(user_id, sort_order);
+CREATE UNIQUE INDEX idx_best_plays_user_sort ON best_plays(user_id, sort_order);
 
 -- ====================================
 -- 5. best_play_tricks

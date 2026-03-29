@@ -1,3 +1,14 @@
+import type {
+  MoodType,
+  TrickCategory,
+  TrickStatus,
+  UserStatus,
+  ClipStatus,
+  ReportReason,
+  ReportTargetType,
+  ReportStatus,
+} from './models'
+
 export interface Database {
   public: {
     Tables: {
@@ -14,7 +25,7 @@ export interface Database {
           team: string | null
           username_change_count: number
           locale: string
-          status: string
+          status: UserStatus
           created_at: string
           updated_at: string
           last_login_at: string | null
@@ -31,7 +42,7 @@ export interface Database {
           team?: string | null
           username_change_count?: number
           locale?: string
-          status?: string
+          status?: UserStatus
           created_at?: string
           updated_at?: string
           last_login_at?: string | null
@@ -47,7 +58,7 @@ export interface Database {
           team?: string | null
           username_change_count?: number
           locale?: string
-          status?: string
+          status?: UserStatus
           last_login_at?: string | null
         }
       }
@@ -58,7 +69,7 @@ export interface Database {
           name_en: string | null
           name_ja: string | null
           aliases: string[] | null
-          category: string
+          category: TrickCategory
           created_by: string | null
           clip_count: number
           challenger_count: number
@@ -71,7 +82,7 @@ export interface Database {
           name_en?: string | null
           name_ja?: string | null
           aliases?: string[] | null
-          category: string
+          category: TrickCategory
           created_by?: string | null
           clip_count?: number
           challenger_count?: number
@@ -83,7 +94,7 @@ export interface Database {
           name_en?: string | null
           name_ja?: string | null
           aliases?: string[] | null
-          category?: string
+          category?: TrickCategory
           clip_count?: number
           challenger_count?: number
         }
@@ -97,9 +108,9 @@ export interface Database {
           video_duration: number
           video_size: number
           caption: string | null
-          mood: string
+          mood: MoodType
           facility_tag: string | null
-          status: string
+          status: ClipStatus
           created_at: string
           updated_at: string
         }
@@ -111,17 +122,17 @@ export interface Database {
           video_duration: number
           video_size: number
           caption?: string | null
-          mood: string
+          mood: MoodType
           facility_tag?: string | null
-          status?: string
+          status?: ClipStatus
           created_at?: string
           updated_at?: string
         }
         Update: {
           caption?: string | null
-          mood?: string
+          mood?: MoodType
           facility_tag?: string | null
-          status?: string
+          status?: ClipStatus
         }
       }
       best_plays: {
@@ -133,7 +144,7 @@ export interface Database {
           video_duration: number
           video_size: number
           title: string | null
-          mood: string | null
+          mood: MoodType | null
           facility_tag: string | null
           sort_order: number
           created_at: string
@@ -147,7 +158,7 @@ export interface Database {
           video_duration: number
           video_size: number
           title?: string | null
-          mood?: string | null
+          mood?: MoodType | null
           facility_tag?: string | null
           sort_order?: number
           created_at?: string
@@ -155,7 +166,7 @@ export interface Database {
         }
         Update: {
           title?: string | null
-          mood?: string | null
+          mood?: MoodType | null
           facility_tag?: string | null
           sort_order?: number
         }
@@ -190,7 +201,7 @@ export interface Database {
         Row: {
           user_id: string
           trick_id: string
-          status: string
+          status: TrickStatus
           first_landed_at: string | null
           created_at: string
           updated_at: string
@@ -198,13 +209,13 @@ export interface Database {
         Insert: {
           user_id: string
           trick_id: string
-          status: string
+          status: TrickStatus
           first_landed_at?: string | null
           created_at?: string
           updated_at?: string
         }
         Update: {
-          status?: string
+          status?: TrickStatus
           first_landed_at?: string | null
         }
       }
@@ -254,26 +265,26 @@ export interface Database {
       reports: {
         Row: {
           id: string
-          target_type: string
+          target_type: ReportTargetType
           target_id: string
           reporter_user_id: string
-          reason: string
+          reason: ReportReason
           reason_detail: string | null
-          status: string
+          status: ReportStatus
           created_at: string
         }
         Insert: {
           id?: string
-          target_type: string
+          target_type: ReportTargetType
           target_id: string
           reporter_user_id: string
-          reason: string
+          reason: ReportReason
           reason_detail?: string | null
-          status?: string
+          status?: ReportStatus
           created_at?: string
         }
         Update: {
-          status?: string
+          status?: ReportStatus
         }
       }
       deletion_logs: {

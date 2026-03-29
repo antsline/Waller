@@ -4,6 +4,7 @@ import { colors } from '@/constants/colors'
 import { typography } from '@/constants/typography'
 import { spacing } from '@/constants/spacing'
 import { Button } from './Button'
+import i18n from '@/i18n'
 
 interface Props {
   readonly children: ReactNode
@@ -24,6 +25,14 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true }
   }
 
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    if (__DEV__) {
+      // eslint-disable-next-line no-console
+      console.error('ErrorBoundary caught:', error, errorInfo)
+    }
+    // TODO: Send to error reporting service (e.g., Sentry) in production
+  }
+
   private handleRetry = () => {
     this.setState({ hasError: false })
   }
@@ -33,10 +42,10 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <View style={styles.container}>
           <Text style={styles.title}>
-            {this.props.fallbackMessage ?? 'Something went wrong'}
+            {this.props.fallbackMessage ?? i18n.t('error.generic')}
           </Text>
           <Button
-            title="Retry"
+            title={i18n.t('common.retry')}
             onPress={this.handleRetry}
             variant="secondary"
             style={styles.button}

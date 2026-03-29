@@ -17,7 +17,9 @@ export function Avatar({ uri, size = 40, style }: AvatarProps) {
     borderRadius: borderRadius.full,
   }
 
-  if (uri) {
+  const isValidUri = uri && (uri.startsWith('https://') || uri.startsWith('http://'))
+
+  if (isValidUri) {
     return (
       <Image
         source={{ uri }}

@@ -23,7 +23,7 @@ export function Toast({
 
   useEffect(() => {
     if (visible) {
-      Animated.sequence([
+      const animation = Animated.sequence([
         Animated.timing(opacity, {
           toValue: 1,
           duration: 200,
@@ -35,8 +35,11 @@ export function Toast({
           duration: 200,
           useNativeDriver: true,
         }),
-      ]).start(() => onHide())
+      ])
+      animation.start(() => onHide())
+      return () => animation.stop()
     }
+    return undefined
   }, [visible, duration, onHide, opacity])
 
   if (!visible) return null
