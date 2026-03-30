@@ -9,7 +9,7 @@ Accelerate the sport's popularity and lay the foundation for Olympic recognition
 
 ## Status
 
-**Phase 1 MVP in development** (Sprint 1-4 complete).
+**Phase 1 MVP in development** (Sprint 1-6 complete).
 
 ## Tech Stack
 
@@ -51,16 +51,18 @@ src/
   lib/           Supabase client
   types/         TypeScript types (database, models, navigation)
   stores/        Zustand stores (auth, clipUpload)
-  hooks/         Custom hooks (17 hooks)
-  services/      External service integrations (storage, video)
+  hooks/         Custom hooks (24 hooks)
+  services/      External service integrations (storage, video, clip, userTricks)
   components/
     ui/          Base UI components (Button, TextInput, Tag, Avatar, etc.)
     dictionary/  Dictionary feature components (TrickCard, PlayerList, etc.)
+    profile/     Profile feature components (ProfileHeader, BestPlayCard, etc.)
+    ReportModal.tsx  Report dialog (user/clip/comment)
   navigation/    React Navigation (RootNavigator, MainTabs, 4 Stacks)
   screens/
     auth/        LoginScreen, ProfileSetupScreen
     home/        FeedScreen, ClipDetailScreen
-    clip/        CreateClipScreen
+    clip/        CreateClipScreen, EditClipScreen
     dictionary/  TrickListScreen, TrickDetailScreen, NewTrickModal
     mypage/      MyPageScreen
   utils/         Zod validation schemas

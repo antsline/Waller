@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { config } from '@/constants/config'
+import { MOOD_VALUES, TRICK_CATEGORY_VALUES } from '@/types/models'
 
 export const uuidSchema = z.string().uuid()
 
@@ -36,7 +37,7 @@ export const clipSchema = z.object({
   video_duration: z.number().min(config.clip.minDuration).max(config.clip.maxDuration),
   video_size: z.number().max(config.clip.maxSizeMB * 1024 * 1024),
   caption: z.string().max(config.clip.maxCaptionLength).nullable().optional(),
-  mood: z.enum(['challenging', 'landed', 'training', 'showcase', 'first_time']),
+  mood: z.enum(MOOD_VALUES),
   facility_tag: z.string().nullable().optional(),
 })
 
@@ -44,7 +45,7 @@ export const trickSchema = z.object({
   name_original: z.string().min(1).max(100),
   name_en: z.string().max(100).nullable().optional(),
   name_ja: z.string().max(100).nullable().optional(),
-  category: z.enum(['flip', 'twist', 'combo', 'original', 'other']),
+  category: z.enum(TRICK_CATEGORY_VALUES),
 })
 
 export const reportSchema = z.object({
@@ -63,7 +64,14 @@ export const videoPickerSchema = z.object({
 })
 
 export const createClipInputSchema = z.object({
-  mood: z.enum(['challenging', 'landed', 'training', 'showcase', 'first_time']),
+  mood: z.enum(MOOD_VALUES),
+  caption: z.string().max(config.clip.maxCaptionLength).nullable().optional(),
+  facility_tag: z.string().max(50).nullable().optional(),
+  trick_ids: z.array(z.string().uuid()).optional(),
+})
+
+export const editClipInputSchema = z.object({
+  mood: z.enum(MOOD_VALUES),
   caption: z.string().max(config.clip.maxCaptionLength).nullable().optional(),
   facility_tag: z.string().max(50).nullable().optional(),
   trick_ids: z.array(z.string().uuid()).optional(),
@@ -71,7 +79,7 @@ export const createClipInputSchema = z.object({
 
 export const bestPlayInputSchema = z.object({
   title: z.string().max(config.bestPlay.maxTitleLength).nullable().optional(),
-  mood: z.enum(['challenging', 'landed', 'training', 'showcase', 'first_time']).nullable().optional(),
+  mood: z.enum(MOOD_VALUES).nullable().optional(),
   facility_tag: z.string().max(50).nullable().optional(),
   trick_ids: z.array(z.string().uuid()).optional(),
 })
@@ -82,3 +90,4 @@ export type TrickInput = z.infer<typeof trickSchema>
 export type ReportInput = z.infer<typeof reportSchema>
 export type VideoPickerInput = z.infer<typeof videoPickerSchema>
 export type CreateClipInput = z.infer<typeof createClipInputSchema>
+export type EditClipInput = z.infer<typeof editClipInputSchema>

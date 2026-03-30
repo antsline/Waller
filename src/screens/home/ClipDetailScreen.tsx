@@ -1,20 +1,20 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import { View, ScrollView, Text, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { z } from 'zod'
-import { supabase } from '@/lib/supabase'
 import type { HomeStackParamList, HomeScreenProps } from '@/types/navigation'
-import type { FeedClip } from '@/types/models'
 import { useAuthStore } from '@/stores/authStore'
 import { useClap } from '@/hooks/useClap'
 import { useClipMenu } from '@/hooks/useClipMenu'
+import { useDeleteClipWithConfirm } from '@/hooks/useDeleteClipWithConfirm'
+import { fetchClipDetail } from '@/services/clip'
 import { ClipPlayer } from '@/components/ClipPlayer'
 import { ClapButton } from '@/components/ClapButton'
 import { MoodTag } from '@/components/MoodTag'
 import { TrickTag } from '@/components/TrickTag'
+import { ReportModal } from '@/components/ReportModal'
 import { Avatar } from '@/components/ui/Avatar'
 import { Spinner } from '@/components/ui/Spinner'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -26,66 +26,6 @@ import { MoreHorizontal } from 'lucide-react-native'
 import { TouchableOpacity } from 'react-native'
 
 type Props = HomeScreenProps<'ClipDetail'>
-
-const uuidSchema = z.string().uuid()
-
-async function fetchClipDetail(
-  clipId: string,
-  userId?: string,
-): Promise<FeedClip> {
-  const validatedId = uuidSchema.parse(clipId)
-
-  const { data: rawData, error } = await supabase
-    .from('clips')
-    .select(
-      `
-      *,
-      user:users!clips_user_id_fkey(id, username, display_name, avatar_url),
-      counters:clip_counters!clip_counters_clip_id_fkey(clip_id, clap_count, clap_total, comment_count, updated_at),
-      tricks:clip_tricks(trick:tricks(id, name_original, name_en, name_ja))
-    `,
-    )
-    .eq('id', validatedId)
-    .eq('status', 'published')
-    .single()
-
-  if (error) {
-    throw new Error(`Failed to fetch clip: ${error.message}`)
-  }
-
-  const row = rawData as Record<string, unknown>
-
-  const tricks = Array.isArray(row.tricks)
-    ? (row.tricks as Record<string, unknown>[]).map((ct) => ct.trick).filter(Boolean)
-    : []
-
-  let userClap = null
-  if (userId) {
-    const { data: clapData } = await supabase
-      .from('claps')
-      .select('count')
-      .eq('clip_id', clipId)
-      .eq('user_id', userId)
-      .single()
-
-    if (clapData) {
-      userClap = { count: clapData.count }
-    }
-  }
-
-  return {
-    ...row,
-    counters: row.counters ?? {
-      clip_id: row.id,
-      clap_count: 0,
-      clap_total: 0,
-      comment_count: 0,
-      updated_at: row.created_at,
-    },
-    tricks,
-    user_clap: userClap,
-  } as unknown as FeedClip
-}
 
 function formatRelativeTime(dateStr: string): string {
   const now = Date.now()
@@ -108,6 +48,8 @@ export function ClipDetailScreen({ route }: Props) {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>()
   const session = useAuthStore((s) => s.session)
   const { showMenu } = useClipMenu()
+  const { confirmDelete } = useDeleteClipWithConfirm()
+  const [reportTargetId, setReportTargetId] = useState<string | null>(null)
 
   const { data: clip, isLoading, isError, refetch } = useQuery({
     queryKey: ['clips', clipId],
@@ -126,11 +68,29 @@ export function ClipDetailScreen({ route }: Props) {
     }
   }, [clip, navigation])
 
+  const handleEdit = useCallback(
+    (id: string) => {
+      navigation.navigate('EditClip', { clipId: id })
+    },
+    [navigation],
+  )
+
+  const handleDelete = useCallback(
+    (id: string) => {
+      confirmDelete(id, () => navigation.goBack())
+    },
+    [confirmDelete, navigation],
+  )
+
   const handlePressMenu = useCallback(() => {
     if (clip) {
-      showMenu(clip.id, clip.user_id, {})
+      showMenu(clip.id, clip.user_id, {
+        onEdit: handleEdit,
+        onDelete: handleDelete,
+        onReport: setReportTargetId,
+      })
     }
-  }, [clip, showMenu])
+  }, [clip, showMenu, handleEdit, handleDelete])
 
   if (isLoading) {
     return <Spinner fullScreen />
@@ -203,6 +163,15 @@ export function ClipDetailScreen({ route }: Props) {
           />
         </View>
       </View>
+
+      {reportTargetId && (
+        <ReportModal
+          visible={reportTargetId !== null}
+          targetId={reportTargetId}
+          targetType="clip"
+          onClose={() => setReportTargetId(null)}
+        />
+      )}
     </ScrollView>
   )
 }

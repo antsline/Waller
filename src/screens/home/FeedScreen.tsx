@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   View,
   FlatList,
@@ -13,7 +13,10 @@ import type { HomeStackParamList } from '@/types/navigation'
 import type { FeedClip } from '@/types/models'
 import { useClips } from '@/hooks/useClips'
 import { useViewability } from '@/hooks/useViewability'
+import { useClipMenu } from '@/hooks/useClipMenu'
+import { useDeleteClipWithConfirm } from '@/hooks/useDeleteClipWithConfirm'
 import { ClipCard } from '@/components/ClipCard'
+import { ReportModal } from '@/components/ReportModal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
@@ -38,7 +41,16 @@ export function FeedScreen() {
   const { viewabilityConfig, onViewableItemsChanged, visibleIndex } =
     useViewability()
 
-  const clips = data?.clips ?? []
+  const { showMenu } = useClipMenu()
+  const { confirmDelete } = useDeleteClipWithConfirm()
+  const [reportTargetId, setReportTargetId] = useState<string | null>(null)
+
+  const clips = useMemo(() => data?.clips ?? [], [data?.clips])
+
+  const clipsRef = useRef(clips)
+  useEffect(() => {
+    clipsRef.current = clips
+  }, [clips])
 
   const handlePressUser = useCallback(
     (userId: string) => {
@@ -52,6 +64,34 @@ export function FeedScreen() {
       navigation.navigate('ClipDetail', { clipId })
     },
     [navigation],
+  )
+
+  const handleEdit = useCallback(
+    (clipId: string) => {
+      navigation.navigate('EditClip', { clipId })
+    },
+    [navigation],
+  )
+
+  const handleDelete = useCallback(
+    (clipId: string) => {
+      confirmDelete(clipId)
+    },
+    [confirmDelete],
+  )
+
+  const handlePressMenu = useCallback(
+    (clipId: string) => {
+      const clip = clipsRef.current.find((c) => c.id === clipId)
+      if (clip) {
+        showMenu(clipId, clip.user_id, {
+          onEdit: handleEdit,
+          onDelete: handleDelete,
+          onReport: setReportTargetId,
+        })
+      }
+    },
+    [showMenu, handleEdit, handleDelete],
   )
 
   const handleEndReached = useCallback(() => {
@@ -70,9 +110,10 @@ export function FeedScreen() {
         isVisible={index === visibleIndexRef.current}
         onPressUser={handlePressUser}
         onPressClip={handlePressClip}
+        onPressMenu={handlePressMenu}
       />
     ),
-    [handlePressUser, handlePressClip],
+    [handlePressUser, handlePressClip, handlePressMenu],
   )
 
   const keyExtractor = useCallback((item: FeedClip) => item.id, [])
@@ -130,6 +171,15 @@ export function FeedScreen() {
           isFetchingNextPage ? <Spinner size="small" /> : null
         }
       />
+
+      {reportTargetId && (
+        <ReportModal
+          visible={reportTargetId !== null}
+          targetId={reportTargetId}
+          targetType="clip"
+          onClose={() => setReportTargetId(null)}
+        />
+      )}
     </View>
   )
 }

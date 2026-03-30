@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import type { HomeStackParamList } from '@/types/navigation'
 import { FeedScreen } from '@/screens/home/FeedScreen'
 import { ClipDetailScreen } from '@/screens/home/ClipDetailScreen'
+import { EditClipScreen } from '@/screens/clip/EditClipScreen'
 import { UserProfileScreen } from '@/screens/home/UserProfileScreen'
 import { colors } from '@/constants/colors'
 
@@ -29,6 +30,11 @@ export function HomeStack() {
         name="ClipDetail"
         component={ClipDetailScreen}
         options={{ title: '' }}
+      />
+      <Stack.Screen
+        name="EditClip"
+        component={EditClipScreen}
+        options={{ title: t('clip.edit_title') }}
       />
       <Stack.Screen
         name="UserProfile"

@@ -109,6 +109,7 @@ src/
     TrickSelector.tsx # Search + multi-select + inline registration
     VideoPreview.tsx  # Thumbnail preview with play icon
     UploadProgress.tsx # Upload step indicator modal
+    ReportModal.tsx # Report dialog (user/clip/comment)
   constants/       # Design system (colors, typography, spacing, config)
   hooks/           # Custom hooks
     useAuth.ts     # Google/Apple OAuth
@@ -129,6 +130,9 @@ src/
     useReport.ts      # Report submission (user/clip/comment)
     useVideoPicker.ts # Video selection + validation + thumbnail
     useViewability.ts # FlatList auto-play tracking
+    useEditClip.ts # Clip edit mutation (mood, tricks)
+    useDeleteClip.ts # Clip deletion mutation (with storage cleanup)
+    useDeleteClipWithConfirm.ts # Clip deletion with confirmation dialog
     useClipMenu.ts # iOS ActionSheet / Android Alert menu
     useDebounce.ts # Generic value debounce
     useImagePicker.ts # Avatar image picker
@@ -137,13 +141,15 @@ src/
   navigation/      # React Navigation (RootNavigator, MainTabs, Stacks)
   screens/
     auth/          # LoginScreen, ProfileSetupScreen
-    clip/          # CreateClipScreen
+    clip/          # CreateClipScreen, EditClipScreen
     home/          # FeedScreen, ClipDetailScreen, UserProfileScreen
     dictionary/    # TrickListScreen, TrickDetailScreen, NewTrickModal
     mypage/        # MyPageScreen, EditProfileScreen, BestPlayManageScreen
   services/
     storage.ts     # Supabase Storage upload/delete helpers
     video.ts       # Video validation + thumbnail generation
+    clip.ts        # Clip CRUD service (edit, delete with related cleanup)
+    userTricks.ts  # User trick status recalculation service
   stores/
     authStore.ts   # Auth session (Zustand)
     clipUploadStore.ts # Upload progress tracking (Zustand)
@@ -315,6 +321,16 @@ src/utils/__tests__/formatNumber.test.ts   # Number formatting edge cases
 src/hooks/__tests__/useBestPlays.test.ts   # Best play CRUD + cleanup
 src/hooks/__tests__/useUserStats.test.ts   # Stats aggregation
 src/hooks/__tests__/useReport.test.ts      # Report submission + duplicates
+```
+
+Sprint 6 hooks that need test coverage:
+
+```
+src/hooks/__tests__/useEditClip.test.ts           # Clip edit mutation
+src/hooks/__tests__/useDeleteClip.test.ts         # Clip deletion + storage cleanup
+src/hooks/__tests__/useDeleteClipWithConfirm.test.ts # Deletion with confirmation
+src/services/__tests__/clip.test.ts               # Clip service CRUD
+src/services/__tests__/userTricks.test.ts         # User trick recalculation
 ```
 
 ### Writing tests

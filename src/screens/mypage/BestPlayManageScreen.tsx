@@ -16,7 +16,7 @@ import { config } from '@/constants/config'
 import { colors } from '@/constants/colors'
 import { typography } from '@/constants/typography'
 import { spacing } from '@/constants/spacing'
-import type { BestPlayWithTricks, MoodType, Trick } from '@/types/models'
+import type { BestPlayWithTricks, MoodType, TrickSummary } from '@/types/models'
 
 type ManageMode = 'view' | 'add'
 
@@ -33,7 +33,7 @@ export function BestPlayManageScreen() {
   const [targetSortOrder, setTargetSortOrder] = useState(0)
   const [title, setTitle] = useState('')
   const [mood, setMood] = useState<MoodType | null>(null)
-  const [selectedTricks, setSelectedTricks] = useState<readonly Trick[]>([])
+  const [selectedTricks, setSelectedTricks] = useState<readonly TrickSummary[]>([])
   const [facilityTag, setFacilityTag] = useState('')
   const [toastMessage, setToastMessage] = useState('')
   const [toastType, setToastType] = useState<'success' | 'error'>('success')

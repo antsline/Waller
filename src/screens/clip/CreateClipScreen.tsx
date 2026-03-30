@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import { View, ScrollView, Text, StyleSheet, Alert } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import type { MoodType, Trick } from '@/types/models'
+import type { MoodType, TrickSummary } from '@/types/models'
 import { useVideoPicker } from '@/hooks/useVideoPicker'
 import { useCreateClip } from '@/hooks/useCreateClip'
 import { VideoPreview } from '@/components/VideoPreview'
@@ -21,7 +21,7 @@ export function CreateClipScreen() {
   const createClip = useCreateClip()
 
   const [mood, setMood] = useState<MoodType | null>(null)
-  const [selectedTricks, setSelectedTricks] = useState<readonly Trick[]>([])
+  const [selectedTricks, setSelectedTricks] = useState<readonly TrickSummary[]>([])
   const [facilityTag, setFacilityTag] = useState('')
   const [caption, setCaption] = useState('')
 

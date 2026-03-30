@@ -1,15 +1,15 @@
 import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { Trick } from '@/types/models'
+import type { TrickSummary } from '@/types/models'
 import { Tag } from '@/components/ui/Tag'
 
 interface TrickTagProps {
-  readonly trick: Pick<Trick, 'name_original' | 'name_en' | 'name_ja'>
+  readonly trick: TrickSummary
   readonly onPress?: () => void
 }
 
 function getTrickDisplayName(
-  trick: Pick<Trick, 'name_original' | 'name_en' | 'name_ja'>,
+  trick: TrickSummary,
   locale: string,
 ): string {
   if (locale === 'ja' && trick.name_ja) return trick.name_ja

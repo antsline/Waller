@@ -2,7 +2,8 @@ import React, { memo, useState, useCallback, useMemo } from 'react'
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Plus, X } from 'lucide-react-native'
-import type { Trick, TrickCategory } from '@/types/models'
+import { TRICK_CATEGORY_VALUES } from '@/types/models'
+import type { TrickSummary, TrickCategory } from '@/types/models'
 import { TextInput } from '@/components/ui/TextInput'
 import { Tag } from '@/components/ui/Tag'
 import { TrickTag } from '@/components/TrickTag'
@@ -16,11 +17,11 @@ import { typography } from '@/constants/typography'
 import { spacing, borderRadius } from '@/constants/spacing'
 
 interface TrickSelectorProps {
-  readonly selectedTricks: readonly Trick[]
-  readonly onTricksChange: (tricks: readonly Trick[]) => void
+  readonly selectedTricks: readonly TrickSummary[]
+  readonly onTricksChange: (tricks: readonly TrickSummary[]) => void
 }
 
-const CATEGORIES: readonly TrickCategory[] = ['flip', 'twist', 'combo', 'original', 'other']
+const CATEGORIES = TRICK_CATEGORY_VALUES
 
 export const TrickSelector = memo(function TrickSelector({
   selectedTricks,
@@ -41,7 +42,7 @@ export const TrickSelector = memo(function TrickSelector({
   const createTrick = useCreateTrick()
 
   const handleSelect = useCallback(
-    (trick: Trick) => {
+    (trick: TrickSummary) => {
       const isSelected = selectedTricks.some((t) => t.id === trick.id)
       if (isSelected) {
         onTricksChange(selectedTricks.filter((t) => t.id !== trick.id))

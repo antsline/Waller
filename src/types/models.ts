@@ -1,16 +1,8 @@
-export type MoodType =
-  | 'challenging'
-  | 'landed'
-  | 'training'
-  | 'showcase'
-  | 'first_time'
+export const MOOD_VALUES = ['challenging', 'landed', 'training', 'showcase', 'first_time'] as const
+export type MoodType = typeof MOOD_VALUES[number]
 
-export type TrickCategory =
-  | 'flip'
-  | 'twist'
-  | 'combo'
-  | 'original'
-  | 'other'
+export const TRICK_CATEGORY_VALUES = ['flip', 'twist', 'combo', 'original', 'other'] as const
+export type TrickCategory = typeof TRICK_CATEGORY_VALUES[number]
 
 export type TrickStatus = 'landed' | 'challenging'
 
@@ -117,13 +109,15 @@ export interface UserTrick {
   readonly updated_at: string
 }
 
+export type TrickSummary = Pick<Trick, 'id' | 'name_original' | 'name_en' | 'name_ja'>
+
 export interface BestPlayWithTricks extends BestPlay {
-  readonly tricks: ReadonlyArray<Pick<Trick, 'id' | 'name_original' | 'name_en' | 'name_ja'>>
+  readonly tricks: readonly TrickSummary[]
 }
 
 export interface FeedClip extends Clip {
   readonly user: Pick<User, 'id' | 'username' | 'display_name' | 'avatar_url'>
   readonly counters: ClipCounters
-  readonly tricks: Pick<Trick, 'id' | 'name_original' | 'name_en' | 'name_ja'>[]
+  readonly tricks: TrickSummary[]
   readonly user_clap: Pick<Clap, 'count'> | null
 }

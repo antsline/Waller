@@ -1,18 +1,11 @@
 import React, { memo } from 'react'
 import { View, Text, ScrollView, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { MOOD_VALUES } from '@/types/models'
 import type { MoodType } from '@/types/models'
 import { Tag } from '@/components/ui/Tag'
 import { typography } from '@/constants/typography'
 import { spacing } from '@/constants/spacing'
-
-const MOODS: readonly MoodType[] = [
-  'challenging',
-  'landed',
-  'training',
-  'showcase',
-  'first_time',
-] as const
 
 interface MoodSelectorProps {
   readonly selected: MoodType | null
@@ -33,7 +26,7 @@ export const MoodSelector = memo(function MoodSelector({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {MOODS.map((mood) => (
+        {MOOD_VALUES.map((mood) => (
           <Tag
             key={mood}
             label={t(`mood.${mood}`)}

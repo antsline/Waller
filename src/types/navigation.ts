@@ -10,6 +10,7 @@ export type AuthStackParamList = {
 export type HomeStackParamList = {
   Feed: undefined
   ClipDetail: { clipId: string }
+  EditClip: { clipId: string }
   UserProfile: { userId: string }
 }
 

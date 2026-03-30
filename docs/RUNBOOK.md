@@ -56,6 +56,10 @@ npx eas submit --platform android --latest
 - [ ] Best Play: Upload progress indicator visible during 60s video upload
 - [ ] Best Play: Video validated at 60s/100MB limits before upload
 - [ ] Report: User report submits with correct target_type='user'
+- [ ] Clip Edit: Edit mood and trick tags on existing clip
+- [ ] Clip Delete: Delete clip with confirmation dialog, storage cleanup
+- [ ] Clip Delete: Verify clip_counters and user_tricks recalculated after deletion
+- [ ] Report Modal: Report clip/user/comment from ReportModal component
 - [ ] Google OAuth: `iosUrlScheme` in `app.json` set to actual reversed client ID
 - [ ] Google OAuth: `EXPO_PUBLIC_GOOGLE_CLIENT_ID` and `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` configured
 - [ ] Supabase Auth: Google and Apple providers enabled in Supabase Dashboard
