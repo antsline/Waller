@@ -49,7 +49,7 @@ export const trickSchema = z.object({
 
 export const reportSchema = z.object({
   target_id: z.string().uuid(),
-  target_type: z.enum(['clip', 'comment']),
+  target_type: z.enum(['clip', 'comment', 'user']),
   reason: z.enum(['inappropriate', 'spam', 'harassment', 'impersonation', 'other']),
   detail: z.string().max(config.report.maxDetailLength).nullable().optional(),
 })
@@ -69,6 +69,14 @@ export const createClipInputSchema = z.object({
   trick_ids: z.array(z.string().uuid()).optional(),
 })
 
+export const bestPlayInputSchema = z.object({
+  title: z.string().max(config.bestPlay.maxTitleLength).nullable().optional(),
+  mood: z.enum(['challenging', 'landed', 'training', 'showcase', 'first_time']).nullable().optional(),
+  facility_tag: z.string().max(50).nullable().optional(),
+  trick_ids: z.array(z.string().uuid()).optional(),
+})
+
+export type BestPlayInput = z.infer<typeof bestPlayInputSchema>
 export type ClipInput = z.infer<typeof clipSchema>
 export type TrickInput = z.infer<typeof trickSchema>
 export type ReportInput = z.infer<typeof reportSchema>

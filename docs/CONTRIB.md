@@ -93,6 +93,12 @@ src/
       TrickCard.tsx          # Trick list item (name + stats)
       ClipThumbnailGrid.tsx  # 3-column clip thumbnail grid
       PlayerList.tsx         # Horizontal player avatar list
+    profile/       # Profile feature components
+      ProfileHeader.tsx      # Shared profile header (avatar, stats, best play)
+      ProfileStats.tsx       # 4-stat row (clips, claps, mastered, challenging)
+      BestPlayCard.tsx       # Best play thumbnail card (or empty + add)
+      BestPlaySection.tsx    # 3-slot best play section
+      UserClipsGrid.tsx      # 3-column user clips grid (infinite scroll)
     ClipCard.tsx   # Instagram-style feed card (full-width video)
     ClipPlayer.tsx # expo-video player with auto-play
     ClapButton.tsx # Clap icon with particle animation
@@ -107,7 +113,7 @@ src/
   hooks/           # Custom hooks
     useAuth.ts     # Google/Apple OAuth
     useAuthInit.ts # Auth session initialization
-    useProfile.ts  # Profile CRUD
+    useProfile.ts  # Profile CRUD + username change mutation
     useClips.ts    # Feed infinite query (useInfiniteQuery)
     useClap.ts     # Clap state machine (tap/rapid/cancel, debounced sync)
     useCreateClip.ts # Multi-step upload mutation
@@ -117,6 +123,10 @@ src/
     useTrickClips.ts  # Clips associated with a trick
     useTrickPlayers.ts # Players who mastered a trick
     useUserTricks.ts  # User's trick mastery status (profile)
+    useUserStats.ts   # User stats aggregation (clips, claps, tricks)
+    useUserClips.ts   # User clips infinite query
+    useBestPlays.ts   # Best play CRUD (create, delete with storage cleanup)
+    useReport.ts      # Report submission (user/clip/comment)
     useVideoPicker.ts # Video selection + validation + thumbnail
     useViewability.ts # FlatList auto-play tracking
     useClipMenu.ts # iOS ActionSheet / Android Alert menu
@@ -128,17 +138,18 @@ src/
   screens/
     auth/          # LoginScreen, ProfileSetupScreen
     clip/          # CreateClipScreen
-    home/          # FeedScreen, ClipDetailScreen
+    home/          # FeedScreen, ClipDetailScreen, UserProfileScreen
     dictionary/    # TrickListScreen, TrickDetailScreen, NewTrickModal
-    mypage/        # MyPageScreen
+    mypage/        # MyPageScreen, EditProfileScreen, BestPlayManageScreen
   services/
     storage.ts     # Supabase Storage upload/delete helpers
     video.ts       # Video validation + thumbnail generation
   stores/
     authStore.ts   # Auth session (Zustand)
     clipUploadStore.ts # Upload progress tracking (Zustand)
+    bestPlayUploadStore.ts # Best play upload progress (Zustand)
   types/           # TypeScript types (database, models, navigation)
-  utils/           # Zod validation schemas (UUID, profile, clip, trick, report)
+  utils/           # Zod validation schemas + formatNumber utility
 ```
 
 ## Development Workflow
@@ -295,9 +306,15 @@ npm run test:coverage     # Coverage report
 
 ### Test file locations
 
+Sprint 5 hooks that need test coverage:
+
 ```
 src/services/__tests__/video.test.ts    # validateVideo edge cases
 src/hooks/__tests__/useClap.test.ts     # Clap state machine (tap/rapid/cancel)
+src/utils/__tests__/formatNumber.test.ts   # Number formatting edge cases
+src/hooks/__tests__/useBestPlays.test.ts   # Best play CRUD + cleanup
+src/hooks/__tests__/useUserStats.test.ts   # Stats aggregation
+src/hooks/__tests__/useReport.test.ts      # Report submission + duplicates
 ```
 
 ### Writing tests

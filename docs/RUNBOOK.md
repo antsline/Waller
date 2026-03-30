@@ -48,6 +48,14 @@ npx eas submit --platform android --latest
 - [ ] Clap: verify tap/rapid-tap/cancel behavior
 - [ ] Dictionary: search, category filter, trick detail, new trick registration
 - [ ] Dictionary: verify trick-player auto-linking (clip mood -> user_tricks status)
+- [ ] Profile: MyPage displays stats, best plays, clips grid
+- [ ] Profile: Edit profile (display name, avatar, hometown, facility, team, bio)
+- [ ] Profile: Username change works (1-time limit, confirmation dialog)
+- [ ] Profile: Other user profile accessible from feed (no edit button, report menu)
+- [ ] Best Play: Add (video pick + title/mood/trick tags), replace, delete
+- [ ] Best Play: Upload progress indicator visible during 60s video upload
+- [ ] Best Play: Video validated at 60s/100MB limits before upload
+- [ ] Report: User report submits with correct target_type='user'
 - [ ] Google OAuth: `iosUrlScheme` in `app.json` set to actual reversed client ID
 - [ ] Google OAuth: `EXPO_PUBLIC_GOOGLE_CLIENT_ID` and `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` configured
 - [ ] Supabase Auth: Google and Apple providers enabled in Supabase Dashboard
@@ -193,6 +201,30 @@ npm run build:dev
 1. Check file size and type on client
 2. Verify storage policies in Supabase Dashboard
 3. Check Supabase logs for specific error
+
+### Best play upload fails or times out
+
+**Possible causes:**
+1. File exceeds 60s duration or 100MB size limit
+2. Network timeout on slow connections (60s videos can be large)
+3. Storage bucket RLS policy blocks the upload
+
+**Debug:**
+1. Check video duration and file size via `useVideoPicker('bestPlay')` state
+2. Monitor `bestPlayUploadStore` step (video -> thumbnail -> saving -> done)
+3. If stuck at 'video' step, likely network issue or file too large
+4. Check `best-plays` bucket policies in Supabase Dashboard
+
+### Username change not working
+
+**Cause:** User has already changed their username once (`username_change_count >= 1`).
+
+**Verify:**
+```sql
+SELECT username, username_change_count FROM users WHERE id = '<user_id>';
+```
+
+The UI disables the field when `username_change_count > 0`. The server also enforces this via `.eq('username_change_count', 0)` in the update query.
 
 ### Video auto-play not working in feed
 

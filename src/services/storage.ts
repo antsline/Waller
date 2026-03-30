@@ -86,6 +86,10 @@ export async function uploadBestPlayThumbnail(userId: string, bestPlayId: string
 export async function deleteStorageFile(bucket: string, userId: string, path: string): Promise<void> {
   const uid = validateId(userId, 'userId')
 
+  if (path.includes('..')) {
+    throw new Error('Invalid path')
+  }
+
   if (!path.startsWith(`${uid}/`)) {
     throw new Error('Cannot delete files outside own folder')
   }

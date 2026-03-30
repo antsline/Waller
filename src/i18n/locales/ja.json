@@ -54,7 +54,17 @@
     "clips": "CLIPS",
     "username_checking": "確認中...",
     "username_available": "利用可能",
-    "avatar_too_large": "画像は5MB以下にしてください"
+    "avatar_too_large": "画像は5MB以下にしてください",
+    "best_play_manage": "BEST PLAY 管理",
+    "best_play_delete_confirm": "このベストプレイを削除しますか？",
+    "best_play_upload_video": "動画をアップロード中...",
+    "best_play_upload_thumbnail": "サムネイル生成中...",
+    "best_play_upload_saving": "保存中...",
+    "best_play_upload_complete": "追加完了",
+    "no_clips": "まだ投稿がありません",
+    "no_best_plays": "ベストプレイを追加しよう",
+    "report_user": "このユーザーを通報",
+    "username_change_confirm": "ユーザーIDを変更しますか？この操作は1度しかできません"
   },
   "tabs": {
     "home": "ホーム",

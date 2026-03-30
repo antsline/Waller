@@ -21,7 +21,7 @@ export type ReportReason =
   | 'impersonation'
   | 'other'
 
-export type ReportTargetType = 'clip' | 'comment'
+export type ReportTargetType = 'clip' | 'comment' | 'user'
 
 export type UserStatus = 'active' | 'suspended' | 'deleted'
 
@@ -115,6 +115,10 @@ export interface UserTrick {
   readonly first_landed_at: string | null
   readonly created_at: string
   readonly updated_at: string
+}
+
+export interface BestPlayWithTricks extends BestPlay {
+  readonly tricks: ReadonlyArray<Pick<Trick, 'id' | 'name_original' | 'name_en' | 'name_ja'>>
 }
 
 export interface FeedClip extends Clip {

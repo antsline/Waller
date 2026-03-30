@@ -1,51 +1,85 @@
-import React, { useCallback, useState } from 'react'
-import { View, StyleSheet } from 'react-native'
-import { useTranslation } from 'react-i18next'
+import React, { useCallback } from 'react'
+import { ScrollView, StyleSheet } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { useAuthStore } from '@/stores/authStore'
-import { useAuth } from '@/hooks/useAuth'
-import { Avatar } from '@/components/ui/Avatar'
-import { Button } from '@/components/ui/Button'
-import { Toast } from '@/components/ui/Toast'
+import { useUserStats } from '@/hooks/useUserStats'
+import { useBestPlays } from '@/hooks/useBestPlays'
+import { ProfileHeader } from '@/components/profile/ProfileHeader'
+import { UserClipsGrid } from '@/components/profile/UserClipsGrid'
+import { Spinner } from '@/components/ui/Spinner'
+import type { MyPageStackParamList } from '@/types/navigation'
+import type { BestPlayWithTricks } from '@/types/models'
 import { colors } from '@/constants/colors'
 import { spacing } from '@/constants/spacing'
 
-export function MyPageScreen() {
-  const { t } = useTranslation()
-  const user = useAuthStore((s) => s.user)
-  const { signOut } = useAuth()
-  const [loading, setLoading] = useState(false)
-  const [toastMessage, setToastMessage] = useState('')
+type MyPageNav = NativeStackNavigationProp<MyPageStackParamList, 'MyPage'>
 
-  const handleSignOut = useCallback(async () => {
-    try {
-      setLoading(true)
-      await signOut()
-    } catch {
-      setToastMessage(t('error.generic'))
-    } finally {
-      setLoading(false)
-    }
-  }, [signOut, t])
+export function MyPageScreen() {
+  const navigation = useNavigation<MyPageNav>()
+  const user = useAuthStore((s) => s.user)
+  const { data: stats } = useUserStats(user?.id)
+  const { data: bestPlays } = useBestPlays(user?.id)
+
+  const handleEditProfile = useCallback(() => {
+    navigation.navigate('EditProfile')
+  }, [navigation])
+
+  const handlePressBestPlay = useCallback(
+    (_bestPlay: BestPlayWithTricks) => {
+      navigation.navigate('BestPlayManage')
+    },
+    [navigation],
+  )
+
+  const handlePressAddBestPlay = useCallback(
+    (_sortOrder: number) => {
+      navigation.navigate('BestPlayManage')
+    },
+    [navigation],
+  )
+
+  const handlePressClip = useCallback(
+    (clipId: string) => {
+      const parent = navigation.getParent()
+      if (parent) {
+        parent.navigate('HomeTab', {
+          screen: 'ClipDetail',
+          params: { clipId },
+        })
+      }
+    },
+    [navigation],
+  )
+
+  if (!user) {
+    return <Spinner />
+  }
+
+  const defaultStats = {
+    clipCount: 0,
+    clapTotal: 0,
+    tricksMastered: 0,
+    tricksChallenging: 0,
+  }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Avatar uri={user?.avatar_url} size={80} />
-        <Button
-          title={t('auth.sign_out')}
-          onPress={handleSignOut}
-          variant="secondary"
-          loading={loading}
-          style={styles.signOutButton}
-        />
-      </View>
-      <Toast
-        message={toastMessage}
-        visible={toastMessage !== ''}
-        onHide={() => setToastMessage('')}
-        type="error"
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+    >
+      <ProfileHeader
+        user={user}
+        stats={stats ?? defaultStats}
+        bestPlays={bestPlays ?? []}
+        isOwnProfile
+        onEditProfile={handleEditProfile}
+        onPressBestPlay={handlePressBestPlay}
+        onPressAddBestPlay={handlePressAddBestPlay}
       />
-    </View>
+
+      <UserClipsGrid userId={user.id} onPressClip={handlePressClip} />
+    </ScrollView>
   )
 }
 
@@ -55,13 +89,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   content: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing['3xl'],
+    paddingTop: spacing.xl,
+    paddingBottom: spacing['4xl'],
     gap: spacing.xl,
-  },
-  signOutButton: {
-    width: '100%',
   },
 })

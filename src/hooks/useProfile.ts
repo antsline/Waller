@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/authStore'
-import { profileSetupSchema, profileUpdateSchema } from '@/utils/validation'
+import { profileSetupSchema, profileUpdateSchema, usernameSchema } from '@/utils/validation'
 import type { ProfileSetupInput, ProfileUpdateInput } from '@/utils/validation'
 import type { User } from '@/types/models'
 import i18n from '@/i18n'
@@ -89,6 +89,39 @@ export function useProfile(userId?: string) {
     },
   })
 
+  const updateUsernameMutation = useMutation({
+    mutationFn: async ({ userId: uid, newUsername }: { userId: string; newUsername: string }) => {
+      usernameSchema.parse(newUsername)
+
+      const { data, error } = await supabase
+        .from('users')
+        .update({
+          username: newUsername,
+          username_change_count: 1,
+        })
+        .eq('id', uid)
+        .eq('username_change_count', 0)
+        .select()
+        .single()
+
+      if (error) {
+        if (error.code === '23505') {
+          throw new Error('username_taken')
+        }
+        if (error.code === 'PGRST116') {
+          throw new Error('username_change_limit')
+        }
+        throw new Error(`Failed to update username: ${error.message}`)
+      }
+
+      return data as User
+    },
+    onSuccess: (data) => {
+      setUser(data)
+      queryClient.setQueryData(['profile', data.id], data)
+    },
+  })
+
   const checkUsernameAvailable = useCallback(
     async (username: string): Promise<boolean> => {
       const { data } = await supabase
@@ -110,6 +143,8 @@ export function useProfile(userId?: string) {
     createProfileLoading: createProfileMutation.isPending,
     updateProfile: updateProfileMutation.mutateAsync,
     updateProfileLoading: updateProfileMutation.isPending,
+    updateUsername: updateUsernameMutation.mutateAsync,
+    updateUsernameLoading: updateUsernameMutation.isPending,
     checkUsernameAvailable,
   }
 }

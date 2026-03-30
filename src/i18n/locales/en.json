@@ -54,7 +54,17 @@
     "clips": "CLIPS",
     "username_checking": "Checking...",
     "username_available": "Available",
-    "avatar_too_large": "Image must be under 5MB"
+    "avatar_too_large": "Image must be under 5MB",
+    "best_play_manage": "BEST PLAY Management",
+    "best_play_delete_confirm": "Delete this best play?",
+    "best_play_upload_video": "Uploading video...",
+    "best_play_upload_thumbnail": "Generating thumbnail...",
+    "best_play_upload_saving": "Saving...",
+    "best_play_upload_complete": "Added successfully",
+    "no_clips": "No clips yet",
+    "no_best_plays": "Add your best plays",
+    "report_user": "Report this user",
+    "username_change_confirm": "Change your User ID? This can only be done once"
   },
   "tabs": {
     "home": "Home",

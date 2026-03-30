@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import type { HomeStackParamList } from '@/types/navigation'
 import { FeedScreen } from '@/screens/home/FeedScreen'
 import { ClipDetailScreen } from '@/screens/home/ClipDetailScreen'
+import { UserProfileScreen } from '@/screens/home/UserProfileScreen'
 import { colors } from '@/constants/colors'
 
 const Stack = createNativeStackNavigator<HomeStackParamList>()
@@ -27,6 +28,11 @@ export function HomeStack() {
       <Stack.Screen
         name="ClipDetail"
         component={ClipDetailScreen}
+        options={{ title: '' }}
+      />
+      <Stack.Screen
+        name="UserProfile"
+        component={UserProfileScreen}
         options={{ title: '' }}
       />
     </Stack.Navigator>
