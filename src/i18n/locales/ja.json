@@ -121,7 +121,13 @@
     "name_en": "英語名",
     "name_en_placeholder": "English name (recommended)",
     "category": "カテゴリ",
-    "empty": "まだ技が登録されていません"
+    "empty": "まだ技が登録されていません",
+    "clips_section": "クリップ",
+    "players_section": "習得したプレイヤー",
+    "no_clips": "まだクリップがありません",
+    "no_players": "まだ習得したプレイヤーはいません",
+    "register_success": "技を登録しました",
+    "register_submit": "登録する"
   },
   "report": {
     "title": "通報",

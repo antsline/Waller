@@ -46,6 +46,8 @@ npx eas submit --platform android --latest
 - [ ] Video upload: test clip creation end-to-end (1-15s, under 50MB)
 - [ ] Feed: verify auto-play, pagination, pull-to-refresh
 - [ ] Clap: verify tap/rapid-tap/cancel behavior
+- [ ] Dictionary: search, category filter, trick detail, new trick registration
+- [ ] Dictionary: verify trick-player auto-linking (clip mood -> user_tricks status)
 - [ ] Google OAuth: `iosUrlScheme` in `app.json` set to actual reversed client ID
 - [ ] Google OAuth: `EXPO_PUBLIC_GOOGLE_CLIENT_ID` and `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` configured
 - [ ] Supabase Auth: Google and Apple providers enabled in Supabase Dashboard
@@ -248,6 +250,32 @@ FROM (
   GROUP BY clip_id
 ) sub
 WHERE cc.clip_id = sub.clip_id;
+```
+
+### Trick counts out of sync
+
+If `tricks.clip_count` or `tricks.challenger_count` don't match actual data:
+
+```sql
+-- Recalculate clip_count for all tricks
+UPDATE tricks t
+SET clip_count = sub.cnt
+FROM (
+  SELECT trick_id, COUNT(*) as cnt
+  FROM clip_tricks
+  GROUP BY trick_id
+) sub
+WHERE t.id = sub.trick_id;
+
+-- Recalculate challenger_count for all tricks
+UPDATE tricks t
+SET challenger_count = sub.cnt
+FROM (
+  SELECT trick_id, COUNT(*) as cnt
+  FROM user_tricks
+  GROUP BY trick_id
+) sub
+WHERE t.id = sub.trick_id;
 ```
 
 ### User trick status incorrect

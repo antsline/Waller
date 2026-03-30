@@ -88,8 +88,13 @@ npm run build:dev
 src/
   components/
     ui/            # Reusable UI components (Button, TextInput, Avatar, Tag, etc.)
+    dictionary/    # Dictionary feature components
+      CategoryFilterBar.tsx  # Horizontal category filter tabs
+      TrickCard.tsx          # Trick list item (name + stats)
+      ClipThumbnailGrid.tsx  # 3-column clip thumbnail grid
+      PlayerList.tsx         # Horizontal player avatar list
     ClipCard.tsx   # Instagram-style feed card (full-width video)
-    ClipPlayer.tsx # expo-av video player with auto-play
+    ClipPlayer.tsx # expo-video player with auto-play
     ClapButton.tsx # Clap icon with particle animation
     ClapParticles.tsx # Orange particle burst (Animated API)
     MoodTag.tsx    # Mood display tag with i18n
@@ -101,12 +106,17 @@ src/
   constants/       # Design system (colors, typography, spacing, config)
   hooks/           # Custom hooks
     useAuth.ts     # Google/Apple OAuth
+    useAuthInit.ts # Auth session initialization
     useProfile.ts  # Profile CRUD
     useClips.ts    # Feed infinite query (useInfiniteQuery)
     useClap.ts     # Clap state machine (tap/rapid/cancel, debounced sync)
     useCreateClip.ts # Multi-step upload mutation
-    useTricks.ts   # Trick search query
-    useCreateTrick.ts # Inline trick registration
+    useTricks.ts   # Trick search query (debounced, category filter)
+    useCreateTrick.ts # Trick registration mutation
+    useTrickDetail.ts # Single trick detail + creator info
+    useTrickClips.ts  # Clips associated with a trick
+    useTrickPlayers.ts # Players who mastered a trick
+    useUserTricks.ts  # User's trick mastery status (profile)
     useVideoPicker.ts # Video selection + validation + thumbnail
     useViewability.ts # FlatList auto-play tracking
     useClipMenu.ts # iOS ActionSheet / Android Alert menu
@@ -119,8 +129,8 @@ src/
     auth/          # LoginScreen, ProfileSetupScreen
     clip/          # CreateClipScreen
     home/          # FeedScreen, ClipDetailScreen
-    dictionary/    # TrickListScreen (placeholder)
-    mypage/        # MyPageScreen (placeholder)
+    dictionary/    # TrickListScreen, TrickDetailScreen, NewTrickModal
+    mypage/        # MyPageScreen
   services/
     storage.ts     # Supabase Storage upload/delete helpers
     video.ts       # Video validation + thumbnail generation
@@ -128,7 +138,7 @@ src/
     authStore.ts   # Auth session (Zustand)
     clipUploadStore.ts # Upload progress tracking (Zustand)
   types/           # TypeScript types (database, models, navigation)
-  utils/           # Zod validation schemas
+  utils/           # Zod validation schemas (UUID, profile, clip, trick, report)
 ```
 
 ## Development Workflow

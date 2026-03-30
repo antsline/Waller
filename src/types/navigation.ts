@@ -16,6 +16,8 @@ export type HomeStackParamList = {
 export type DictionaryStackParamList = {
   TrickList: undefined
   TrickDetail: { trickId: string }
+  NewTrickModal: undefined
+  ClipDetail: { clipId: string }
 }
 
 export type MyPageStackParamList = {

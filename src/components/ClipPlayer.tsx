@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native'
-import { Video, ResizeMode } from 'expo-av'
+import { useVideoPlayer, VideoView } from 'expo-video'
 import { VolumeX } from 'lucide-react-native'
 import { colors } from '@/constants/colors'
 
@@ -23,18 +23,30 @@ export const ClipPlayer = memo(function ClipPlayer({
   thumbnailUri,
   isVisible,
 }: ClipPlayerProps) {
-  const videoRef = useRef<Video>(null)
   const [isPaused, setIsPaused] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false)
+
+  const player = useVideoPlayer(videoUri, (p) => {
+    p.loop = true
+    p.muted = true
+  })
 
   useEffect(() => {
-    if (!videoRef.current) return
-
     if (isVisible && !isPaused) {
-      videoRef.current.playAsync()
+      player.play()
     } else {
-      videoRef.current.pauseAsync()
+      player.pause()
     }
-  }, [isVisible, isPaused])
+  }, [isVisible, isPaused, player])
+
+  useEffect(() => {
+    const subscription = player.addListener('statusChange', (event) => {
+      if (event.status === 'readyToPlay') {
+        setIsLoaded(true)
+      }
+    })
+    return () => subscription.remove()
+  }, [player])
 
   const handlePress = useCallback(() => {
     setIsPaused((prev) => !prev)
@@ -43,16 +55,14 @@ export const ClipPlayer = memo(function ClipPlayer({
   return (
     <TouchableWithoutFeedback onPress={handlePress}>
       <View style={styles.container}>
-        <Video
-          ref={videoRef}
-          source={{ uri: videoUri }}
-          posterSource={{ uri: thumbnailUri }}
-          usePoster
-          resizeMode={ResizeMode.COVER}
-          isLooping
-          isMuted
-          shouldPlay={isVisible && !isPaused}
+        {!isLoaded && (
+          <Image source={{ uri: thumbnailUri }} style={styles.poster} />
+        )}
+        <VideoView
+          player={player}
           style={styles.video}
+          nativeControls={false}
+          contentFit="cover"
         />
         <View style={styles.muteIcon}>
           <VolumeX size={14} color={colors.white} strokeWidth={2} />
@@ -68,6 +78,12 @@ const styles = StyleSheet.create({
     aspectRatio: 9 / 16,
     backgroundColor: colors.black,
   },
+  poster: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+    zIndex: 1,
+  },
   video: {
     width: '100%',
     height: '100%',
@@ -79,5 +95,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 12,
     padding: 4,
+    zIndex: 2,
   },
 })

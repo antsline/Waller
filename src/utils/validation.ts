@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { config } from '@/constants/config'
 
+export const uuidSchema = z.string().uuid()
+
 const usernameRegex = /^[a-z0-9_]+$/
 
 export const usernameSchema = z

@@ -9,7 +9,7 @@ Accelerate the sport's popularity and lay the foundation for Olympic recognition
 
 ## Status
 
-**Phase 1 MVP in development** (Sprint 1 complete).
+**Phase 1 MVP in development** (Sprint 1-4 complete).
 
 ## Tech Stack
 
@@ -38,6 +38,9 @@ Accelerate the sport's popularity and lay the foundation for Olympic recognition
 | `npm run build:dev` | EAS build for development (iOS) |
 | `npm run build:preview` | EAS build for internal testing (iOS) |
 | `npm run build:prod` | EAS build for production (iOS) |
+| `npm test` | Run all tests with Jest |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run test:coverage` | Run tests with coverage report |
 
 ## Project Structure
 
@@ -47,14 +50,20 @@ src/
   i18n/          Internationalization (ja.json, en.json)
   lib/           Supabase client
   types/         TypeScript types (database, models, navigation)
-  stores/        Zustand stores (auth)
-  hooks/         Custom hooks
-  services/      External service integrations
-  components/    Reusable components
-    ui/          Base UI components (Button, TextInput, Tag, etc.)
-  navigation/    React Navigation setup
-  screens/       Screen components
-  utils/         Utility functions
+  stores/        Zustand stores (auth, clipUpload)
+  hooks/         Custom hooks (17 hooks)
+  services/      External service integrations (storage, video)
+  components/
+    ui/          Base UI components (Button, TextInput, Tag, Avatar, etc.)
+    dictionary/  Dictionary feature components (TrickCard, PlayerList, etc.)
+  navigation/    React Navigation (RootNavigator, MainTabs, 4 Stacks)
+  screens/
+    auth/        LoginScreen, ProfileSetupScreen
+    home/        FeedScreen, ClipDetailScreen
+    clip/        CreateClipScreen
+    dictionary/  TrickListScreen, TrickDetailScreen, NewTrickModal
+    mypage/      MyPageScreen
+  utils/         Zod validation schemas
 supabase/
   migrations/    Database schema (4 migration files)
 docs/

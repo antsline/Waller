@@ -121,7 +121,13 @@
     "name_en": "English Name",
     "name_en_placeholder": "English name (recommended)",
     "category": "Category",
-    "empty": "No tricks registered yet"
+    "empty": "No tricks registered yet",
+    "clips_section": "Clips",
+    "players_section": "Players Who Mastered",
+    "no_clips": "No clips yet",
+    "no_players": "No one has mastered this trick yet",
+    "register_success": "Trick registered",
+    "register_submit": "Register"
   },
   "report": {
     "title": "Report",

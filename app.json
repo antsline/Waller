@@ -15,7 +15,14 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.waller.app"
+      "bundleIdentifier": "com.waller.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true,
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "package": "com.waller.app",
@@ -39,7 +46,8 @@
           "iosUrlScheme": "com.googleusercontent.apps.GOOGLE_IOS_CLIENT_ID"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-video"
     ]
   }
 }

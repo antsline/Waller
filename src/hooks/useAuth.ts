@@ -1,18 +1,30 @@
 import { useCallback } from 'react'
 import { Platform } from 'react-native'
-import { GoogleSignin } from '@react-native-google-signin/google-signin'
+import Constants from 'expo-constants'
 import * as AppleAuthentication from 'expo-apple-authentication'
 import * as Crypto from 'expo-crypto'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/authStore'
 
+const isExpoGo = Constants.executionEnvironment === 'storeClient'
+
 const googleWebClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID
 const googleIosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID
 
-GoogleSignin.configure({
-  webClientId: googleWebClientId,
-  iosClientId: googleIosClientId,
-})
+let GoogleSignin: typeof import('@react-native-google-signin/google-signin').GoogleSignin | null = null
+
+if (!isExpoGo) {
+  try {
+    const mod = require('@react-native-google-signin/google-signin')
+    GoogleSignin = mod.GoogleSignin
+    GoogleSignin?.configure({
+      webClientId: googleWebClientId,
+      iosClientId: googleIosClientId,
+    })
+  } catch {
+    // Native module not available (Expo Go)
+  }
+}
 
 export function useAuth() {
   const setSession = useAuthStore((s) => s.setSession)
@@ -40,6 +52,10 @@ export function useAuth() {
   const signInWithGoogle = useCallback(async () => {
     try {
       setLoading(true)
+
+      if (!GoogleSignin) {
+        throw new Error('Google Sign-In is not available in Expo Go. Use a development build.')
+      }
 
       if (Platform.OS === 'android') {
         await GoogleSignin.hasPlayServices()
@@ -121,7 +137,7 @@ export function useAuth() {
     try {
       await supabase.auth.signOut()
       try {
-        await GoogleSignin.revokeAccess()
+        await GoogleSignin?.revokeAccess()
       } catch {
         // Google revoke may fail silently if not signed in with Google
       }
