@@ -12,7 +12,31 @@ import type {
 export interface Database {
   public: {
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      check_and_delete_clip: {
+        Args: { p_clip_id: string }
+        Returns: {
+          status: 'deleted' | 'error'
+          code?: string
+          trick_ids?: string[]
+          mood?: string
+        }
+      }
+      replace_clip_tricks: {
+        Args: { p_clip_id: string; p_trick_ids: string[] }
+        Returns: {
+          status: 'replaced' | 'error'
+          code?: string
+        }
+      }
+      delete_account: {
+        Args: Record<string, never>
+        Returns: {
+          status: 'deleted' | 'error'
+          code?: string
+        }
+      }
+    }
     Tables: {
       users: {
         Row: {

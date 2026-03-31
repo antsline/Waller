@@ -5,6 +5,8 @@ import type { MyPageStackParamList } from '@/types/navigation'
 import { MyPageScreen } from '@/screens/mypage/MyPageScreen'
 import { EditProfileScreen } from '@/screens/mypage/EditProfileScreen'
 import { BestPlayManageScreen } from '@/screens/mypage/BestPlayManageScreen'
+import { SettingsScreen } from '@/screens/mypage/SettingsScreen'
+import { WebViewScreen } from '@/screens/mypage/WebViewScreen'
 import { colors } from '@/constants/colors'
 
 const Stack = createNativeStackNavigator<MyPageStackParamList>()
@@ -34,6 +36,16 @@ export function MyPageStack() {
         name="BestPlayManage"
         component={BestPlayManageScreen}
         options={{ title: t('profile.best_play_manage') }}
+      />
+      <Stack.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{ title: t('settings.title') }}
+      />
+      <Stack.Screen
+        name="WebView"
+        component={WebViewScreen}
+        options={({ route }) => ({ title: route.params.title })}
       />
     </Stack.Navigator>
   )

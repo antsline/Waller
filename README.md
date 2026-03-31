@@ -9,7 +9,7 @@ Accelerate the sport's popularity and lay the foundation for Olympic recognition
 
 ## Status
 
-**Phase 1 MVP in development** (Sprint 1-6 complete).
+**Phase 1 MVP complete** (all 7 sprints delivered).
 
 ## Tech Stack
 
@@ -25,6 +25,24 @@ Accelerate the sport's popularity and lay the foundation for Olympic recognition
 | Validation | Zod | |
 | Icons | Lucide React Native | Line style |
 | Web (Phase 3) | Next.js | SSR/SSG |
+
+## Features (Phase 1 MVP)
+
+| Sprint | Feature | Description |
+|---|---|---|
+| 1 | Infrastructure | Expo SDK 55, Supabase, navigation, design system, i18n |
+| 2 | Authentication | Google/Apple OAuth, profile setup, session persistence |
+| 3 | Feed + Clips | Video feed, clip upload (15s/50MB), clap system (1-10 per user) |
+| 4 | Trick Dictionary | Search, category filter, trick detail, registration, auto-linking |
+| 5 | Profile + Best Play | MyPage, other user profiles, edit profile, best play management (3 slots) |
+| 6 | Clip Edit/Delete/Report | Edit mood/tricks, delete with confirmation, report modal |
+| 7 | Settings + Security | Settings screen (language, account delete, legal), RPC functions, network status banner, feed auto-play optimization |
+
+## Testing
+
+- **9 test suites, 55 tests** (Jest 29 + jest-expo)
+- Unit, integration, and hook tests
+- Run: `npm test` / `npm run test:coverage`
 
 ## Scripts
 
@@ -51,7 +69,7 @@ src/
   lib/           Supabase client
   types/         TypeScript types (database, models, navigation)
   stores/        Zustand stores (auth, clipUpload)
-  hooks/         Custom hooks (24 hooks)
+  hooks/         Custom hooks (27 hooks)
   services/      External service integrations (storage, video, clip, userTricks)
   components/
     ui/          Base UI components (Button, TextInput, Tag, Avatar, etc.)
@@ -64,10 +82,10 @@ src/
     home/        FeedScreen, ClipDetailScreen
     clip/        CreateClipScreen, EditClipScreen
     dictionary/  TrickListScreen, TrickDetailScreen, NewTrickModal
-    mypage/      MyPageScreen
+    mypage/      MyPageScreen, SettingsScreen
   utils/         Zod validation schemas
 supabase/
-  migrations/    Database schema (4 migration files)
+  migrations/    Database schema (5 migration files)
 docs/
   requirements_v1.0.md   Requirements specification
   dev_plan_v1.0.md       Development plan (7 sprints)

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback, memo } from 'react'
+import React, { useEffect, useState, useCallback, memo } from 'react'
 import {
   View,
   TouchableWithoutFeedback,
@@ -12,17 +12,24 @@ import { colors } from '@/constants/colors'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 
+type PlayerMode = 'active' | 'ready' | 'thumbnail'
+
 interface ClipPlayerProps {
   readonly videoUri: string
   readonly thumbnailUri: string
   readonly isVisible: boolean
+  readonly mode?: PlayerMode
 }
 
-export const ClipPlayer = memo(function ClipPlayer({
+function ClipPlayerVideo({
   videoUri,
   thumbnailUri,
-  isVisible,
-}: ClipPlayerProps) {
+  shouldPlay,
+}: {
+  readonly videoUri: string
+  readonly thumbnailUri: string
+  readonly shouldPlay: boolean
+}) {
   const [isPaused, setIsPaused] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
 
@@ -32,12 +39,12 @@ export const ClipPlayer = memo(function ClipPlayer({
   })
 
   useEffect(() => {
-    if (isVisible && !isPaused) {
+    if (shouldPlay && !isPaused) {
       player.play()
     } else {
       player.pause()
     }
-  }, [isVisible, isPaused, player])
+  }, [shouldPlay, isPaused, player])
 
   useEffect(() => {
     const subscription = player.addListener('statusChange', (event) => {
@@ -69,6 +76,39 @@ export const ClipPlayer = memo(function ClipPlayer({
         </View>
       </View>
     </TouchableWithoutFeedback>
+  )
+}
+
+function ClipPlayerThumbnail({
+  thumbnailUri,
+}: {
+  readonly thumbnailUri: string
+}) {
+  return (
+    <View style={styles.container}>
+      <Image source={{ uri: thumbnailUri }} style={styles.poster} />
+    </View>
+  )
+}
+
+export const ClipPlayer = memo(function ClipPlayer({
+  videoUri,
+  thumbnailUri,
+  isVisible,
+  mode = 'active',
+}: ClipPlayerProps) {
+  if (mode === 'thumbnail') {
+    return <ClipPlayerThumbnail thumbnailUri={thumbnailUri} />
+  }
+
+  const shouldPlay = mode === 'active' && isVisible
+
+  return (
+    <ClipPlayerVideo
+      videoUri={videoUri}
+      thumbnailUri={thumbnailUri}
+      shouldPlay={shouldPlay}
+    />
   )
 })
 

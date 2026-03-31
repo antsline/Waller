@@ -15,7 +15,7 @@ import { useClips } from '@/hooks/useClips'
 import { useViewability } from '@/hooks/useViewability'
 import { useClipMenu } from '@/hooks/useClipMenu'
 import { useDeleteClipWithConfirm } from '@/hooks/useDeleteClipWithConfirm'
-import { ClipCard } from '@/components/ClipCard'
+import { FeedClipItem } from '@/components/FeedClipItem'
 import { ReportModal } from '@/components/ReportModal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Spinner } from '@/components/ui/Spinner'
@@ -105,9 +105,10 @@ export function FeedScreen() {
 
   const renderItem = useCallback(
     ({ item, index }: { item: FeedClip; index: number }) => (
-      <ClipCard
+      <FeedClipItem
         clip={item}
-        isVisible={index === visibleIndexRef.current}
+        index={index}
+        visibleIndex={visibleIndexRef.current}
         onPressUser={handlePressUser}
         onPressClip={handlePressClip}
         onPressMenu={handlePressMenu}
@@ -162,7 +163,7 @@ export function FeedScreen() {
             tintColor={colors.accent}
           />
         }
-        windowSize={5}
+        windowSize={3}
         maxToRenderPerBatch={3}
         removeClippedSubviews
         ItemSeparatorComponent={Separator}

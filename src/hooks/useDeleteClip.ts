@@ -4,15 +4,17 @@ import { uuidSchema } from '@/utils/validation'
 import { useAuthStore } from '@/stores/authStore'
 import { deleteStorageFile } from '@/services/storage'
 import { reevaluateUserTricksForClip } from '@/services/userTricks'
-import { config } from '@/constants/config'
 import type { MoodType } from '@/types/models'
 
 interface DeleteClipParams {
   readonly clipId: string
 }
 
-function getUtcTodayStart(): string {
-  return new Date().toISOString().slice(0, 10) + 'T00:00:00Z'
+interface RpcResult {
+  readonly status: 'deleted' | 'error'
+  readonly code?: string
+  readonly trick_ids?: readonly string[]
+  readonly mood?: string
 }
 
 async function executeDeleteClip(
@@ -21,83 +23,42 @@ async function executeDeleteClip(
 ): Promise<void> {
   const validatedClipId = uuidSchema.parse(params.clipId)
 
-  const { data: clip, error: fetchError } = await supabase
-    .from('clips')
-    .select('id, user_id, video_url, thumbnail_url, created_at, mood')
-    .eq('id', validatedClipId)
-    .eq('user_id', userId)
-    .eq('status', 'published')
-    .single()
+  const { data, error } = await supabase.rpc('check_and_delete_clip', {
+    p_clip_id: validatedClipId,
+  })
 
-  if (fetchError || !clip) {
-    throw new Error('Clip not found')
-  }
-
-  const { data: clipTricks } = await supabase
-    .from('clip_tricks')
-    .select('trick_id')
-    .eq('clip_id', validatedClipId)
-
-  const trickIds = (clipTricks ?? []).map((ct) => ct.trick_id)
-
-  const clipAgeMs = Date.now() - new Date(clip.created_at).getTime()
-  const freeWindowMs = config.deletion.freeWindowMinutes * 60 * 1000
-
-  if (clipAgeMs > freeWindowMs) {
-    const utcTodayStart = getUtcTodayStart()
-
-    const { count, error: countError } = await supabase
-      .from('deletion_logs')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .gte('deleted_at', utcTodayStart)
-
-    if (countError) {
-      throw new Error('Failed to check deletion limit')
-    }
-
-    if ((count ?? 0) >= config.deletion.maxDailyDeletes) {
-      throw new Error('delete_limit_reached')
-    }
-  }
-
-  const { error: updateError } = await supabase
-    .from('clips')
-    .update({ status: 'deleted' })
-    .eq('id', validatedClipId)
-    .eq('user_id', userId)
-
-  if (updateError) {
+  if (error) {
     throw new Error('Failed to delete clip')
   }
 
-  const { error: logError } = await supabase
-    .from('deletion_logs')
-    .insert({ user_id: userId, clip_id: validatedClipId })
+  const result = data as RpcResult
 
-  if (logError) {
-    throw new Error('Failed to log deletion')
+  if (result.status === 'error') {
+    throw new Error(result.code ?? 'Failed to delete clip')
   }
 
+  // Storage cleanup (best-effort, non-critical)
   try {
     const videoPath = `${userId}/${validatedClipId}/video.mp4`
     const thumbnailPath = `${userId}/${validatedClipId}/thumbnail.jpg`
     await deleteStorageFile('clips', userId, videoPath)
     await deleteStorageFile('clips', userId, thumbnailPath)
-  } catch (error) {
-    console.warn('Storage cleanup failed:', validatedClipId, error)
+  } catch {
+    // Storage cleanup failure is non-critical
   }
 
-  if (trickIds.length > 0) {
+  // Re-evaluate user_tricks (best-effort)
+  const trickIds = result.trick_ids ?? []
+  if (trickIds.length > 0 && result.mood) {
     try {
       await reevaluateUserTricksForClip(
         userId,
         validatedClipId,
-        trickIds,
-        clip.mood as MoodType,
+        [...trickIds],
+        result.mood as MoodType,
       )
-    } catch (error) {
-      console.warn('user_tricks re-evaluation failed:', validatedClipId, error)
+    } catch {
+      // user_tricks re-evaluation failure is non-critical
     }
   }
 }

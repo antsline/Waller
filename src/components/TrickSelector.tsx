@@ -7,6 +7,7 @@ import type { TrickSummary, TrickCategory } from '@/types/models'
 import { TextInput } from '@/components/ui/TextInput'
 import { Tag } from '@/components/ui/Tag'
 import { TrickTag } from '@/components/TrickTag'
+import { getLocalizedTrickName } from '@/utils/trickName'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { useTricks } from '@/hooks/useTricks'
@@ -27,7 +28,7 @@ export const TrickSelector = memo(function TrickSelector({
   selectedTricks,
   onTricksChange,
 }: TrickSelectorProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [searchText, setSearchText] = useState('')
   const [showRegister, setShowRegister] = useState(false)
   const [newTrickName, setNewTrickName] = useState('')
@@ -119,7 +120,7 @@ export const TrickSelector = memo(function TrickSelector({
                 onPress={() => handleSelect(trick)}
                 style={styles.resultItem}
               >
-                <Text style={styles.resultText}>{trick.name_original}</Text>
+                <Text style={styles.resultText}>{getLocalizedTrickName(trick, i18n.language)}</Text>
                 <Text style={styles.resultSub}>
                   {t(`dictionary.category_${trick.category}`)}
                 </Text>

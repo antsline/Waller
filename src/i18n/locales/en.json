@@ -11,6 +11,11 @@
     "retry": "Retry",
     "loading": "Loading...",
     "confirm": "Confirm",
+    "now": "now",
+    "minutes_ago": "{{count}}m",
+    "hours_ago": "{{count}}h",
+    "days_ago": "{{count}}d",
+    "seconds_short": "{{count}}s",
     "search": "Search",
     "optional": "Optional",
     "required": "Required"
@@ -161,6 +166,7 @@
     "contact": "Contact Us",
     "delete_account": "Delete Account",
     "delete_account_confirm": "Are you sure you want to delete your account? This cannot be undone",
+    "logout_confirm": "Are you sure you want to log out?",
     "version": "Version"
   },
   "error": {
@@ -177,6 +183,11 @@
     "profile_update_failed": "Failed to update profile",
     "video_duration_short": "Video is too short",
     "video_duration_long": "Video is too long",
-    "video_no_uri": "No video selected"
+    "video_no_uri": "No video selected",
+    "offline": "You are offline",
+    "delete_account_failed": "Failed to delete account",
+    "session_expired": "Your session has expired. Please log in again",
+    "clip_save_failed": "Failed to save clip",
+    "trick_tags_failed": "Failed to save trick tags"
   }
 }

@@ -13,10 +13,13 @@ interface VideoPreviewProps {
   readonly loading?: boolean
 }
 
-function formatDuration(ms: number | null): string {
+function formatDuration(
+  ms: number | null,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
   if (ms == null) return ''
   const seconds = Math.round(ms / 1000)
-  return `${seconds}s`
+  return t('common.seconds_short', { count: seconds })
 }
 
 export const VideoPreview = memo(function VideoPreview({
@@ -51,7 +54,7 @@ export const VideoPreview = memo(function VideoPreview({
       <Image source={{ uri: thumbnailUri }} style={styles.thumbnail} />
       {duration != null && (
         <View style={styles.durationBadge}>
-          <Text style={styles.durationText}>{formatDuration(duration)}</Text>
+          <Text style={styles.durationText}>{formatDuration(duration, t)}</Text>
         </View>
       )}
     </TouchableOpacity>

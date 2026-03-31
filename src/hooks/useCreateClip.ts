@@ -55,7 +55,7 @@ async function executeCreateClip(
     })
 
     if (clipError) {
-      throw new Error('Failed to save clip')
+      throw new Error('error.clip_save_failed')
     }
 
     if (validated.trick_ids && validated.trick_ids.length > 0) {
@@ -69,7 +69,7 @@ async function executeCreateClip(
         .insert(clipTricks)
 
       if (tricksError) {
-        throw new Error('Failed to save trick tags')
+        throw new Error('error.trick_tags_failed')
       }
     }
 

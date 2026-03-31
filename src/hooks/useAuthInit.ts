@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/stores/authStore'
+import i18n from '@/i18n'
 
 export function useAuthInit() {
   const setSession = useAuthStore((s) => s.setSession)
@@ -26,6 +27,14 @@ export function useAuthInit() {
       }
 
       setUser(data ?? null)
+
+      if (data?.locale && data.locale !== i18n.language) {
+        try {
+          await i18n.changeLanguage(data.locale)
+        } catch {
+          // Locale sync failure is non-critical; device locale will be used
+        }
+      }
     }
 
     async function initSession() {

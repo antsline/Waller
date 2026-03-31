@@ -1,7 +1,8 @@
-import React, { useCallback } from 'react'
-import { ScrollView, StyleSheet } from 'react-native'
+import React, { useCallback, useLayoutEffect } from 'react'
+import { ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { Settings } from 'lucide-react-native'
 import { useAuthStore } from '@/stores/authStore'
 import { useUserStats } from '@/hooks/useUserStats'
 import { useBestPlays } from '@/hooks/useBestPlays'
@@ -18,6 +19,19 @@ type MyPageNav = NativeStackNavigationProp<MyPageStackParamList, 'MyPage'>
 export function MyPageScreen() {
   const navigation = useNavigation<MyPageNav>()
   const user = useAuthStore((s) => s.user)
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Settings')}
+          activeOpacity={0.7}
+        >
+          <Settings size={22} color={colors.text} />
+        </TouchableOpacity>
+      ),
+    })
+  }, [navigation])
   const { data: stats } = useUserStats(user?.id)
   const { data: bestPlays } = useBestPlays(user?.id)
 

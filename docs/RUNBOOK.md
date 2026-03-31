@@ -60,6 +60,16 @@ npx eas submit --platform android --latest
 - [ ] Clip Delete: Delete clip with confirmation dialog, storage cleanup
 - [ ] Clip Delete: Verify clip_counters and user_tricks recalculated after deletion
 - [ ] Report Modal: Report clip/user/comment from ReportModal component
+- [ ] Settings: SettingsScreen accessible from MyPage (language switch, account delete, legal links)
+- [ ] Settings: Language switch toggles between Japanese and English in real time
+- [ ] Settings: Account deletion confirmation dialog, RPC call, and sign-out
+- [ ] Network: Offline banner appears when device loses connectivity
+- [ ] Network: Offline banner dismisses when connectivity is restored
+- [ ] Feed: Auto-play optimization (only visible clip plays, others paused)
+- [ ] i18n: Full audit -- all screens tested in both Japanese and English
+- [ ] RPC: `check_and_delete_clip` works atomically (ownership, free window, daily limit)
+- [ ] RPC: `replace_clip_tricks` replaces tags transactionally
+- [ ] RPC: `delete_account` soft-deletes user and cascades to clips, best plays, tricks
 - [ ] Google OAuth: `iosUrlScheme` in `app.json` set to actual reversed client ID
 - [ ] Google OAuth: `EXPO_PUBLIC_GOOGLE_CLIENT_ID` and `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` configured
 - [ ] Supabase Auth: Google and Apple providers enabled in Supabase Dashboard
@@ -71,10 +81,11 @@ npx eas submit --platform android --latest
 Apply in order to a new or existing Supabase project:
 
 ```
-001_create_tables.sql      -- Tables and indexes
-002_create_triggers.sql    -- Trigger functions (SECURITY DEFINER)
+001_create_tables.sql       -- Tables and indexes
+002_create_triggers.sql     -- Trigger functions (SECURITY DEFINER)
 003_create_rls_policies.sql -- Row Level Security
-004_create_storage.sql     -- Storage buckets and policies
+004_create_storage.sql      -- Storage buckets and policies
+005_create_rpc_functions.sql -- RPC functions (check_and_delete_clip, replace_clip_tricks, delete_account)
 ```
 
 Run via the Supabase Dashboard SQL editor, or using the Supabase CLI:
@@ -112,6 +123,28 @@ FROM storage.buckets;
 ```
 
 Expected buckets: `clips`, `avatars`, `best-plays`.
+
+### Verify RPC Functions
+
+After applying migration 005, verify the functions exist:
+
+```sql
+SELECT routine_name, routine_type
+FROM information_schema.routines
+WHERE routine_schema = 'public'
+  AND routine_name IN ('check_and_delete_clip', 'replace_clip_tricks', 'delete_account');
+```
+
+All 3 functions should appear. Verify grants:
+
+```sql
+SELECT grantee, routine_name, privilege_type
+FROM information_schema.routine_privileges
+WHERE routine_schema = 'public'
+  AND routine_name IN ('check_and_delete_clip', 'replace_clip_tricks', 'delete_account');
+```
+
+The `authenticated` role should have EXECUTE privilege on all 3.
 
 ### Enable OAuth Providers
 
@@ -259,6 +292,35 @@ The UI disables the field when `username_change_count > 0`. The server also enfo
 2. Verify `claps` table RLS policy allows upsert for current user
 3. Check `clip_counters` trigger is firing (see trigger verification below)
 4. Check clap count CHECK constraint (1-10): values outside range are rejected
+
+### Network banner not showing when offline
+
+**Cause:** `@react-native-community/netinfo` requires native module. Will not work in Expo Go.
+
+**Debug:**
+1. Use a development build (`npm run build:dev`)
+2. Toggle airplane mode on device
+3. Banner should appear at top of screen when `isConnected` is false
+4. Check `useNetworkStatus` hook is returning correct state
+
+### Account deletion fails
+
+**Cause:** RPC function `delete_account` not deployed, or user session expired.
+
+**Debug:**
+1. Verify migration `005_create_rpc_functions.sql` has been applied
+2. Check Supabase logs for RPC error
+3. Verify user is authenticated (valid session)
+4. Check that user status is `active` (already-deleted accounts return error)
+
+### Language switch not persisting
+
+**Cause:** AsyncStorage write failure or app restart before save.
+
+**Debug:**
+1. Check `useLanguage` hook state
+2. Verify `@react-native-async-storage/async-storage` is working
+3. Language preference is stored in AsyncStorage under the i18n key
 
 ### Counter out of sync
 

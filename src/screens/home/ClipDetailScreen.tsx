@@ -27,7 +27,10 @@ import { TouchableOpacity } from 'react-native'
 
 type Props = HomeScreenProps<'ClipDetail'>
 
-function formatRelativeTime(dateStr: string): string {
+function formatRelativeTime(
+  dateStr: string,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
   const now = Date.now()
   const date = new Date(dateStr).getTime()
   const diffMs = now - date
@@ -35,10 +38,10 @@ function formatRelativeTime(dateStr: string): string {
   const diffHours = Math.floor(diffMin / 60)
   const diffDays = Math.floor(diffHours / 24)
 
-  if (diffMin < 1) return 'now'
-  if (diffMin < 60) return `${diffMin}m`
-  if (diffHours < 24) return `${diffHours}h`
-  if (diffDays < 7) return `${diffDays}d`
+  if (diffMin < 1) return t('common.now')
+  if (diffMin < 60) return t('common.minutes_ago', { count: diffMin })
+  if (diffHours < 24) return t('common.hours_ago', { count: diffHours })
+  if (diffDays < 7) return t('common.days_ago', { count: diffDays })
   return new Date(dateStr).toLocaleDateString()
 }
 
@@ -129,7 +132,7 @@ export function ClipDetailScreen({ route }: Props) {
           </TouchableOpacity>
           <View style={styles.headerRight}>
             <Text style={styles.timeAgo}>
-              {formatRelativeTime(clip.created_at)}
+              {formatRelativeTime(clip.created_at, t)}
             </Text>
             <TouchableOpacity onPress={handlePressMenu} activeOpacity={0.7}>
               <MoreHorizontal size={20} color={colors.textSecondary} />

@@ -24,6 +24,8 @@ export const config = {
     maxAvatarSizeMB: 5,
     maxUsernameChanges: 1,
   },
+  // NOTE: Deletion limits are enforced server-side in check_and_delete_clip RPC.
+  // Values here are for UI display only (e.g., showing limits in error messages).
   deletion: {
     freeWindowMinutes: 10,
     maxDailyDeletes: 3,
@@ -34,5 +36,11 @@ export const config = {
   },
   feed: {
     pageSize: 10,
+  },
+  errorDisplay: {
+    critical: 'modal',
+    upload: 'toast',
+    validation: 'inline',
+    network: 'banner',
   },
 } as const

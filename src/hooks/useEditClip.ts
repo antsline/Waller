@@ -49,6 +49,7 @@ async function executeEditClip(
     })
     .eq('id', validatedClipId)
     .eq('user_id', userId)
+    .eq('status', 'published')
 
   if (updateError) {
     throw new Error('Failed to update clip')
@@ -62,28 +63,18 @@ async function executeEditClip(
     newTrickIds.some((id) => !oldTrickIds.includes(id))
 
   if (tricksChanged) {
-    const { error: deleteError } = await supabase
-      .from('clip_tricks')
-      .delete()
-      .eq('clip_id', validatedClipId)
+    const { data, error: rpcError } = await supabase.rpc('replace_clip_tricks', {
+      p_clip_id: validatedClipId,
+      p_trick_ids: [...newTrickIds],
+    })
 
-    if (deleteError) {
+    if (rpcError) {
       throw new Error('Failed to update trick tags')
     }
 
-    if (newTrickIds.length > 0) {
-      const clipTricks = newTrickIds.map((trickId) => ({
-        clip_id: validatedClipId,
-        trick_id: trickId,
-      }))
-
-      const { error: insertError } = await supabase
-        .from('clip_tricks')
-        .insert(clipTricks)
-
-      if (insertError) {
-        throw new Error('Failed to update trick tags')
-      }
+    const result = data as { status: string; code?: string }
+    if (result.status === 'error') {
+      throw new Error(result.code ?? 'Failed to update trick tags')
     }
   }
 

@@ -1,8 +1,10 @@
 const mockFrom = jest.fn()
+const mockRpc = jest.fn()
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {
     from: (...args: unknown[]) => mockFrom(...args),
+    rpc: (...args: unknown[]) => mockRpc(...args),
   },
 }))
 
@@ -48,6 +50,18 @@ function makeOwnershipCheckChain() {
   }
 }
 
+function makeUpdateChain() {
+  return {
+    update: jest.fn().mockReturnValue({
+      eq: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          eq: jest.fn().mockResolvedValue({ error: null }),
+        }),
+      }),
+    }),
+  }
+}
+
 describe('useEditClip', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -68,7 +82,9 @@ describe('useEditClip', () => {
   it('updates clip without touching tricks when unchanged', async () => {
     const updateMock = jest.fn().mockReturnValue({
       eq: jest.fn().mockReturnValue({
-        eq: jest.fn().mockResolvedValue({ error: null }),
+        eq: jest.fn().mockReturnValue({
+          eq: jest.fn().mockResolvedValue({ error: null }),
+        }),
       }),
     })
 
@@ -99,31 +115,23 @@ describe('useEditClip', () => {
       caption: 'test',
       facility_tag: null,
     })
+    expect(mockRpc).not.toHaveBeenCalled()
   })
 
-  it('replaces clip_tricks when trick_ids change', async () => {
-    const deleteMock = jest.fn().mockReturnValue({
-      eq: jest.fn().mockResolvedValue({ error: null }),
-    })
-    const insertMock = jest.fn().mockResolvedValue({ error: null })
-
+  it('calls replace_clip_tricks RPC when trick_ids change', async () => {
     let clipsCallCount = 0
     mockFrom.mockImplementation((table: string) => {
       if (table === 'clips') {
         clipsCallCount++
         if (clipsCallCount === 1) return makeOwnershipCheckChain()
-        return {
-          update: jest.fn().mockReturnValue({
-            eq: jest.fn().mockReturnValue({
-              eq: jest.fn().mockResolvedValue({ error: null }),
-            }),
-          }),
-        }
-      }
-      if (table === 'clip_tricks') {
-        return { delete: deleteMock, insert: insertMock }
+        return makeUpdateChain()
       }
       return {}
+    })
+
+    mockRpc.mockResolvedValue({
+      data: { status: 'replaced' },
+      error: null,
     })
 
     const hook = useEditClip()
@@ -136,13 +144,38 @@ describe('useEditClip', () => {
       trick_ids: ['00000000-0000-0000-0000-000000000020'],
     })
 
-    expect(deleteMock).toHaveBeenCalled()
-    expect(insertMock).toHaveBeenCalledWith([
-      {
-        clip_id: '00000000-0000-0000-0000-000000000001',
-        trick_id: '00000000-0000-0000-0000-000000000020',
-      },
-    ])
+    expect(mockRpc).toHaveBeenCalledWith('replace_clip_tricks', {
+      p_clip_id: '00000000-0000-0000-0000-000000000001',
+      p_trick_ids: ['00000000-0000-0000-0000-000000000020'],
+    })
+  })
+
+  it('throws when replace_clip_tricks RPC returns error status', async () => {
+    let clipsCallCount = 0
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'clips') {
+        clipsCallCount++
+        if (clipsCallCount === 1) return makeOwnershipCheckChain()
+        return makeUpdateChain()
+      }
+      return {}
+    })
+
+    mockRpc.mockResolvedValue({
+      data: { status: 'error', code: 'not_owner' },
+      error: null,
+    })
+
+    const hook = useEditClip()
+    await expect(
+      hook.mutateAsync({
+        clipId: '00000000-0000-0000-0000-000000000001',
+        mood: 'landed',
+        oldMood: 'landed',
+        oldTrickIds: ['00000000-0000-0000-0000-000000000010'],
+        trick_ids: ['00000000-0000-0000-0000-000000000020'],
+      }),
+    ).rejects.toThrow('not_owner')
   })
 
   it('calls reevaluateUserTricksForClip when mood changes from landed', async () => {
@@ -151,13 +184,7 @@ describe('useEditClip', () => {
       if (table === 'clips') {
         clipsCallCount++
         if (clipsCallCount === 1) return makeOwnershipCheckChain()
-        return {
-          update: jest.fn().mockReturnValue({
-            eq: jest.fn().mockReturnValue({
-              eq: jest.fn().mockResolvedValue({ error: null }),
-            }),
-          }),
-        }
+        return makeUpdateChain()
       }
       return {}
     })
@@ -187,13 +214,7 @@ describe('useEditClip', () => {
       if (table === 'clips') {
         clipsCallCount++
         if (clipsCallCount === 1) return makeOwnershipCheckChain()
-        return {
-          update: jest.fn().mockReturnValue({
-            eq: jest.fn().mockReturnValue({
-              eq: jest.fn().mockResolvedValue({ error: null }),
-            }),
-          }),
-        }
+        return makeUpdateChain()
       }
       return {}
     })

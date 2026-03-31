@@ -67,21 +67,21 @@ export const createClipInputSchema = z.object({
   mood: z.enum(MOOD_VALUES),
   caption: z.string().max(config.clip.maxCaptionLength).nullable().optional(),
   facility_tag: z.string().max(50).nullable().optional(),
-  trick_ids: z.array(z.string().uuid()).optional(),
+  trick_ids: z.array(z.string().uuid()).max(20).optional(),
 })
 
 export const editClipInputSchema = z.object({
   mood: z.enum(MOOD_VALUES),
   caption: z.string().max(config.clip.maxCaptionLength).nullable().optional(),
   facility_tag: z.string().max(50).nullable().optional(),
-  trick_ids: z.array(z.string().uuid()).optional(),
+  trick_ids: z.array(z.string().uuid()).max(20).optional(),
 })
 
 export const bestPlayInputSchema = z.object({
   title: z.string().max(config.bestPlay.maxTitleLength).nullable().optional(),
   mood: z.enum(MOOD_VALUES).nullable().optional(),
   facility_tag: z.string().max(50).nullable().optional(),
-  trick_ids: z.array(z.string().uuid()).optional(),
+  trick_ids: z.array(z.string().uuid()).max(20).optional(),
 })
 
 export type BestPlayInput = z.infer<typeof bestPlayInputSchema>

@@ -16,6 +16,7 @@ import { spacing } from '@/constants/spacing'
 interface ClipCardProps {
   readonly clip: FeedClip
   readonly isVisible: boolean
+  readonly playerMode?: 'active' | 'ready' | 'thumbnail'
   readonly onPressUser: (userId: string) => void
   readonly onPressClip: (clipId: string) => void
   readonly onPressTrick?: (trickId: string) => void
@@ -25,6 +26,7 @@ interface ClipCardProps {
 export const ClipCard = memo(function ClipCard({
   clip,
   isVisible,
+  playerMode,
   onPressUser,
   onPressClip,
   onPressTrick,
@@ -73,6 +75,7 @@ export const ClipCard = memo(function ClipCard({
           videoUri={clip.video_url}
           thumbnailUri={clip.thumbnail_url}
           isVisible={isVisible}
+          mode={playerMode}
         />
       </TouchableOpacity>
 

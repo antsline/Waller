@@ -43,6 +43,7 @@ supabase/migrations/001_create_tables.sql
 supabase/migrations/002_create_triggers.sql
 supabase/migrations/003_create_rls_policies.sql
 supabase/migrations/004_create_storage.sql
+supabase/migrations/005_create_rpc_functions.sql
 ```
 
 ### 4. Configure Google OAuth
@@ -88,6 +89,7 @@ npm run build:dev
 src/
   components/
     ui/            # Reusable UI components (Button, TextInput, Avatar, Tag, etc.)
+      NetworkBanner.tsx     # Offline network status banner
     dictionary/    # Dictionary feature components
       CategoryFilterBar.tsx  # Horizontal category filter tabs
       TrickCard.tsx          # Trick list item (name + stats)
@@ -111,7 +113,7 @@ src/
     UploadProgress.tsx # Upload step indicator modal
     ReportModal.tsx # Report dialog (user/clip/comment)
   constants/       # Design system (colors, typography, spacing, config)
-  hooks/           # Custom hooks
+  hooks/           # Custom hooks (27 hooks)
     useAuth.ts     # Google/Apple OAuth
     useAuthInit.ts # Auth session initialization
     useProfile.ts  # Profile CRUD + username change mutation
@@ -131,11 +133,14 @@ src/
     useVideoPicker.ts # Video selection + validation + thumbnail
     useViewability.ts # FlatList auto-play tracking
     useEditClip.ts # Clip edit mutation (mood, tricks)
-    useDeleteClip.ts # Clip deletion mutation (with storage cleanup)
+    useDeleteClip.ts # Clip deletion mutation (via RPC with storage cleanup)
     useDeleteClipWithConfirm.ts # Clip deletion with confirmation dialog
     useClipMenu.ts # iOS ActionSheet / Android Alert menu
     useDebounce.ts # Generic value debounce
     useImagePicker.ts # Avatar image picker
+    useNetworkStatus.ts  # Network connectivity monitoring (NetInfo)
+    useDeleteAccount.ts  # Account deletion via RPC
+    useLanguage.ts       # Language switching (ja/en)
   i18n/            # Internationalization (ja.json, en.json)
   lib/             # Supabase client (expo-secure-store for session)
   navigation/      # React Navigation (RootNavigator, MainTabs, Stacks)
@@ -144,7 +149,8 @@ src/
     clip/          # CreateClipScreen, EditClipScreen
     home/          # FeedScreen, ClipDetailScreen, UserProfileScreen
     dictionary/    # TrickListScreen, TrickDetailScreen, NewTrickModal
-    mypage/        # MyPageScreen, EditProfileScreen, BestPlayManageScreen
+    mypage/        # MyPageScreen, EditProfileScreen, BestPlayManageScreen,
+                   # SettingsScreen, WebViewScreen
   services/
     storage.ts     # Supabase Storage upload/delete helpers
     video.ts       # Video validation + thumbnail generation
@@ -259,6 +265,10 @@ Orange (`#FF8C00`) is used only for:
 - Error messages are generic (no Supabase internal details leaked to UI)
 - Clap count validated both client-side (Zod) and server-side (CHECK constraint)
 - MIME type validation is server-side authoritative (Supabase storage bucket config)
+- Clip deletion uses server-side RPC (`check_and_delete_clip`) to prevent TOCTOU race conditions
+- Clip trick replacement uses server-side RPC (`replace_clip_tricks`) for atomic transactions
+- Account deletion uses server-side RPC (`delete_account`) with cascading cleanup
+- Network status monitored via `@react-native-community/netinfo` with offline banner
 
 ## Database Schema
 
@@ -285,6 +295,18 @@ Triggers in `002_create_triggers.sql` handle:
 
 All trigger functions use `SECURITY DEFINER SET search_path = public` for RLS compatibility.
 
+### RPC functions (Sprint 7)
+
+3 server-side RPC functions in `005_create_rpc_functions.sql`:
+
+| Function | Purpose |
+|---|---|
+| `check_and_delete_clip(clip_id)` | Atomic clip deletion with ownership check, free window, daily limit, and cleanup |
+| `replace_clip_tricks(clip_id, trick_ids)` | Atomic clip_tricks replacement with ownership verification |
+| `delete_account()` | Soft-delete user account with cascading cleanup (clips, best plays, tricks) |
+
+These resolve Sprint 6 security carryover items (TOCTOU race, non-transactional replacement, orphan cleanup, client clock dependency).
+
 ## Testing
 
 Test coverage target: 80%+
@@ -308,29 +330,20 @@ npm run test:coverage     # Coverage report
 
 - **Unit tests:** validation schemas, video service, hook state machines
 - **Integration tests:** Supabase queries (mocked), multi-step upload flow
-- **E2E tests:** critical user flows (planned for Sprint 7)
+- **E2E tests:** critical user flows (future enhancement)
 
-### Test file locations
-
-Sprint 5 hooks that need test coverage:
+### Current test suites (9 suites, 55 tests)
 
 ```
-src/services/__tests__/video.test.ts    # validateVideo edge cases
-src/hooks/__tests__/useClap.test.ts     # Clap state machine (tap/rapid/cancel)
-src/utils/__tests__/formatNumber.test.ts   # Number formatting edge cases
-src/hooks/__tests__/useBestPlays.test.ts   # Best play CRUD + cleanup
-src/hooks/__tests__/useUserStats.test.ts   # Stats aggregation
-src/hooks/__tests__/useReport.test.ts      # Report submission + duplicates
-```
-
-Sprint 6 hooks that need test coverage:
-
-```
-src/hooks/__tests__/useEditClip.test.ts           # Clip edit mutation
-src/hooks/__tests__/useDeleteClip.test.ts         # Clip deletion + storage cleanup
-src/hooks/__tests__/useDeleteClipWithConfirm.test.ts # Deletion with confirmation
+src/services/__tests__/video.test.ts              # validateVideo edge cases
 src/services/__tests__/clip.test.ts               # Clip service CRUD
 src/services/__tests__/userTricks.test.ts         # User trick recalculation
+src/hooks/__tests__/useClap.test.ts               # Clap state machine (tap/rapid/cancel)
+src/hooks/__tests__/useEditClip.test.ts           # Clip edit mutation
+src/hooks/__tests__/useDeleteClip.test.ts         # Clip deletion via RPC + storage cleanup
+src/hooks/__tests__/useDeleteAccount.test.ts      # Account deletion via RPC
+src/hooks/__tests__/useLanguage.test.ts           # Language switching
+src/utils/__tests__/trickName.test.ts             # Trick name formatting
 ```
 
 ### Writing tests
