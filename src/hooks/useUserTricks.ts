@@ -31,7 +31,7 @@ async function fetchUserTricks(
     throw new Error('Failed to fetch user tricks')
   }
 
-  return (data ?? []) as readonly UserTrickWithDetails[]
+  return (data ?? []) as unknown as readonly UserTrickWithDetails[]
 }
 
 export function useUserTricks(options: UseUserTricksOptions) {

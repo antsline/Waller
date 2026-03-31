@@ -46,7 +46,7 @@ async function fetchTrickDetail(trickId: string): Promise<TrickWithCreator> {
     return { ...trickData, creator: null }
   }
 
-  return data as TrickWithCreator
+  return data as unknown as TrickWithCreator
 }
 
 export function useTrickDetail(trickId: string) {
