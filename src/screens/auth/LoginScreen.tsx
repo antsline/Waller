@@ -4,8 +4,11 @@ import { useTranslation } from 'react-i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Path } from 'react-native-svg'
 import { useAuth } from '@/hooks/useAuth'
+import { supabase } from '@/lib/supabase'
 import { SocialButton } from '@/components/ui/SocialButton'
 import { Toast } from '@/components/ui/Toast'
+import { TextInput } from '@/components/ui/TextInput'
+import { Button } from '@/components/ui/Button'
 import { colors } from '@/constants/colors'
 import { typography } from '@/constants/typography'
 import { spacing } from '@/constants/spacing'
@@ -45,8 +48,26 @@ export function LoginScreen() {
   const { t } = useTranslation()
   const insets = useSafeAreaInsets()
   const { signInWithGoogle, signInWithApple } = useAuth()
-  const [loading, setLoading] = useState<'google' | 'apple' | null>(null)
+  const [loading, setLoading] = useState<'google' | 'apple' | 'dev' | null>(null)
   const [toastMessage, setToastMessage] = useState('')
+  const [devEmail, setDevEmail] = useState('')
+  const [devPassword, setDevPassword] = useState('')
+
+  const handleDevSignIn = useCallback(async () => {
+    if (!devEmail || !devPassword) return
+    try {
+      setLoading('dev')
+      const { error } = await supabase.auth.signInWithPassword({
+        email: devEmail,
+        password: devPassword,
+      })
+      if (error) throw error
+    } catch {
+      setToastMessage(t('error.generic'))
+    } finally {
+      setLoading(null)
+    }
+  }, [devEmail, devPassword, t])
 
   const handleGoogleSignIn = useCallback(async () => {
     try {
@@ -96,11 +117,36 @@ export function LoginScreen() {
         ) : null}
       </View>
 
+      {__DEV__ && (
+        <View style={styles.devSection}>
+          <Text style={styles.devLabel}>Dev Login</Text>
+          <TextInput
+            value={devEmail}
+            onChangeText={setDevEmail}
+            placeholder="email@example.com"
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <TextInput
+            value={devPassword}
+            onChangeText={setDevPassword}
+            placeholder="password"
+            secureTextEntry
+          />
+          <Button
+            title="Sign In"
+            onPress={handleDevSignIn}
+            loading={loading === 'dev'}
+            disabled={loading !== null || !devEmail || !devPassword}
+          />
+        </View>
+      )}
+
       <Toast
         message={toastMessage}
         visible={toastMessage !== ''}
         onHide={() => setToastMessage('')}
-        type="error"
+        type={toastMessage.includes('Check') ? 'success' : 'error'}
       />
     </View>
   )
@@ -131,5 +177,17 @@ const styles = StyleSheet.create({
   },
   buttons: {
     gap: spacing.md,
+  },
+  devSection: {
+    marginTop: spacing['3xl'],
+    gap: spacing.sm,
+    paddingTop: spacing.xl,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+  },
+  devLabel: {
+    ...typography.label,
+    color: colors.textSecondary,
+    textAlign: 'center',
   },
 })

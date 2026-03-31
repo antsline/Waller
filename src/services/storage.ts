@@ -17,27 +17,25 @@ function buildPath(folder: string, fileName: string): string {
 
 const MAX_UPLOAD_SIZE = 100 * 1024 * 1024
 
+function getFileName(path: string): string {
+  return path.split('/').pop() ?? 'file'
+}
+
 async function uploadFile(
   bucket: string,
   path: string,
   uri: string,
   contentType: string,
 ): Promise<string> {
-  const response = await fetch(uri)
-  const blob = await response.blob()
+  const formData = new FormData()
+  formData.append('', {
+    uri,
+    name: getFileName(path),
+    type: contentType,
+  } as unknown as Blob)
 
-  if (blob.size > MAX_UPLOAD_SIZE) {
-    throw new Error('File too large')
-  }
-
-  // Client-side MIME check is best-effort; blob.type is unreliable for local file URIs on mobile.
-  // Server-side enforcement via Supabase storage bucket allowed_mime_types is authoritative.
-  if (blob.type && blob.type !== contentType && blob.type !== 'application/octet-stream') {
-    throw new Error(`Invalid file type: expected ${contentType}, got ${blob.type}`)
-  }
-
-  const { error } = await supabase.storage.from(bucket).upload(path, blob, {
-    contentType,
+  const { error } = await supabase.storage.from(bucket).upload(path, formData, {
+    contentType: 'multipart/form-data',
     upsert: true,
   })
 

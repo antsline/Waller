@@ -1,6 +1,9 @@
 import React, { useState, useCallback } from 'react'
 import { View, ScrollView, Text, StyleSheet, Alert } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { useNavigation } from '@react-navigation/native'
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
+import type { MainTabParamList } from '@/types/navigation'
 import type { MoodType, TrickSummary } from '@/types/models'
 import { useVideoPicker } from '@/hooks/useVideoPicker'
 import { useCreateClip } from '@/hooks/useCreateClip'
@@ -15,8 +18,11 @@ import { colors } from '@/constants/colors'
 import { typography } from '@/constants/typography'
 import { spacing } from '@/constants/spacing'
 
+type CreateClipNav = BottomTabNavigationProp<MainTabParamList, 'CreateClip'>
+
 export function CreateClipScreen() {
   const { t } = useTranslation()
+  const navigation = useNavigation<CreateClipNav>()
   const videoPicker = useVideoPicker('clip')
   const createClip = useCreateClip()
 
@@ -38,7 +44,7 @@ export function CreateClipScreen() {
       await createClip.mutateAsync({
         videoUri: videoPicker.videoUri,
         thumbnailUri: videoPicker.thumbnailUri,
-        videoDuration: videoPicker.duration ?? 0,
+        videoDuration: Math.round((videoPicker.duration ?? 0) / 1000),
         videoSize: videoPicker.fileSize ?? 0,
         mood,
         caption: caption.trim() || null,
@@ -46,12 +52,14 @@ export function CreateClipScreen() {
         trick_ids: selectedTricks.map((t) => t.id),
       })
 
-      // Reset form
+      // Reset form and navigate to feed
       videoPicker.clearVideo()
       setMood(null)
       setSelectedTricks([])
       setFacilityTag('')
       setCaption('')
+      Alert.alert(t('clip.upload_complete'))
+      navigation.navigate('HomeTab')
     } catch {
       Alert.alert(t('error.generic'), t('error.upload_failed'))
     }
