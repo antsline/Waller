@@ -1,10 +1,12 @@
 import React, { useCallback, useState } from 'react'
-import { View, Text, Platform, StyleSheet } from 'react-native'
+import { View, Text, Image, Platform, TouchableOpacity, StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Path } from 'react-native-svg'
+import { Globe } from 'lucide-react-native'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
+import { useLanguage } from '@/hooks/useLanguage'
 import { SocialButton } from '@/components/ui/SocialButton'
 import { Toast } from '@/components/ui/Toast'
 import { TextInput } from '@/components/ui/TextInput'
@@ -50,8 +52,17 @@ export function LoginScreen() {
   const { signInWithGoogle, signInWithApple } = useAuth()
   const [loading, setLoading] = useState<'google' | 'apple' | 'dev' | null>(null)
   const [toastMessage, setToastMessage] = useState('')
+  const { locale, changeLocale } = useLanguage()
   const [devEmail, setDevEmail] = useState('')
   const [devPassword, setDevPassword] = useState('')
+
+  const handleToggleLanguage = useCallback(async () => {
+    try {
+      await changeLocale(locale === 'ja' ? 'en' : 'ja')
+    } catch {
+      // Non-critical on login screen (no user to persist to DB)
+    }
+  }, [locale, changeLocale])
 
   const handleDevSignIn = useCallback(async () => {
     if (!devEmail || !devPassword) return
@@ -91,10 +102,25 @@ export function LoginScreen() {
     }
   }, [signInWithApple, t])
 
+  const languageLabel = locale === 'ja' ? 'English' : '日本語'
+
   return (
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <TouchableOpacity
+        style={[styles.langToggle, { top: insets.top + spacing.md }]}
+        onPress={handleToggleLanguage}
+        activeOpacity={0.7}
+      >
+        <Globe size={16} color={colors.textSecondary} />
+        <Text style={styles.langText}>{languageLabel}</Text>
+      </TouchableOpacity>
+
       <View style={styles.header}>
-        <Text style={styles.title}>{t('auth.login_title')}</Text>
+        <Image
+          source={require('../../../assets/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.subtitle}>{t('auth.login_subtitle')}</Text>
       </View>
 
@@ -163,17 +189,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing['4xl'],
   },
-  title: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: colors.text,
-    letterSpacing: 2,
+  logo: {
+    width: 240,
+    height: 120,
+    marginBottom: spacing.sm,
   },
   subtitle: {
     ...typography.body,
     color: colors.textSecondary,
     textAlign: 'center',
     marginTop: spacing.md,
+  },
+  langToggle: {
+    position: 'absolute',
+    right: spacing.xl,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    zIndex: 1,
+  },
+  langText: {
+    ...typography.bodySmall,
+    color: colors.textSecondary,
   },
   buttons: {
     gap: spacing.md,
