@@ -1,6 +1,5 @@
 import React, { useRef, useCallback, memo } from 'react'
-import { View, Text, TouchableOpacity, Animated, StyleSheet } from 'react-native'
-import { Hand } from 'lucide-react-native'
+import { View, Text, Image, TouchableOpacity, Animated, StyleSheet } from 'react-native'
 import { ClapParticles } from '@/components/ClapParticles'
 import { colors } from '@/constants/colors'
 import { typography } from '@/constants/typography'
@@ -48,7 +47,10 @@ export const ClapButton = memo(function ClapButton({
     >
       <View style={styles.iconWrapper}>
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-          <Hand size={22} color={iconColor} strokeWidth={isClapped ? 2.5 : 2} />
+          <Image
+            source={require('../../assets/clap-icon.png')}
+            style={[styles.icon, { tintColor: isClapped ? colors.accent : colors.black }]}
+          />
         </Animated.View>
         <ClapParticles trigger={triggerCount} />
       </View>
@@ -81,5 +83,9 @@ const styles = StyleSheet.create({
   countActive: {
     color: colors.accent,
     fontWeight: '600',
+  },
+  icon: {
+    width: 24,
+    height: 24,
   },
 })

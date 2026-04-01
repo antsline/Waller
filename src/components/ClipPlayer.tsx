@@ -2,15 +2,22 @@ import React, { useEffect, useState, useCallback, memo } from 'react'
 import {
   View,
   TouchableWithoutFeedback,
+  TouchableOpacity,
   Image,
   StyleSheet,
   Dimensions,
 } from 'react-native'
 import { useVideoPlayer, VideoView } from 'expo-video'
-import { VolumeX } from 'lucide-react-native'
+import { VolumeX, Volume2, Pause } from 'lucide-react-native'
 import { colors } from '@/constants/colors'
 
-const SCREEN_WIDTH = Dimensions.get('window').width
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window')
+// Header(44) + StatusBar(~54) + TabBar(~83) + tags/actions area(~80)
+const CHROME_HEIGHT = 260
+const VIDEO_HEIGHT = Math.min(
+  SCREEN_WIDTH * (16 / 9),
+  SCREEN_HEIGHT - CHROME_HEIGHT,
+)
 
 type PlayerMode = 'active' | 'ready' | 'thumbnail'
 
@@ -30,6 +37,7 @@ function ClipPlayerVideo({
   readonly thumbnailUri: string
   readonly shouldPlay: boolean
 }) {
+  const [isMuted, setIsMuted] = useState(true)
   const [isPaused, setIsPaused] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
 
@@ -40,11 +48,17 @@ function ClipPlayerVideo({
 
   useEffect(() => {
     if (shouldPlay && !isPaused) {
+      player.playbackRate = 1
       player.play()
     } else {
-      player.pause()
+      // Use playbackRate=0 instead of pause() to avoid iOS PiP controls
+      player.playbackRate = 0
     }
   }, [shouldPlay, isPaused, player])
+
+  useEffect(() => {
+    player.muted = isMuted
+  }, [isMuted, player])
 
   useEffect(() => {
     const subscription = player.addListener('statusChange', (event) => {
@@ -55,12 +69,18 @@ function ClipPlayerVideo({
     return () => subscription.remove()
   }, [player])
 
-  const handlePress = useCallback(() => {
+  const handleTogglePause = useCallback(() => {
     setIsPaused((prev) => !prev)
   }, [])
 
+  const handleToggleMute = useCallback(() => {
+    setIsMuted((prev) => !prev)
+  }, [])
+
+  const MuteIcon = isMuted ? VolumeX : Volume2
+
   return (
-    <TouchableWithoutFeedback onPress={handlePress}>
+    <TouchableWithoutFeedback onPress={handleTogglePause}>
       <View style={styles.container}>
         {!isLoaded && (
           <Image source={{ uri: thumbnailUri }} style={styles.poster} />
@@ -69,11 +89,22 @@ function ClipPlayerVideo({
           player={player}
           style={styles.video}
           nativeControls={false}
+          allowsPictureInPicture={false}
           contentFit="cover"
         />
-        <View style={styles.muteIcon}>
-          <VolumeX size={14} color={colors.white} strokeWidth={2} />
-        </View>
+        {isPaused && (
+          <View style={styles.pauseOverlay}>
+            <Pause size={48} color={colors.white} fill={colors.white} />
+          </View>
+        )}
+        <TouchableOpacity
+          style={styles.muteIcon}
+          onPress={handleToggleMute}
+          activeOpacity={0.7}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <MuteIcon size={18} color={colors.white} strokeWidth={2} />
+        </TouchableOpacity>
       </View>
     </TouchableWithoutFeedback>
   )
@@ -115,7 +146,7 @@ export const ClipPlayer = memo(function ClipPlayer({
 const styles = StyleSheet.create({
   container: {
     width: SCREEN_WIDTH,
-    aspectRatio: 9 / 16,
+    height: VIDEO_HEIGHT,
     backgroundColor: colors.black,
   },
   poster: {
@@ -128,13 +159,20 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  pauseOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    zIndex: 2,
+  },
   muteIcon: {
     position: 'absolute',
-    bottom: 8,
-    right: 8,
+    bottom: 12,
+    right: 12,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 12,
-    padding: 4,
-    zIndex: 2,
+    borderRadius: 16,
+    padding: 8,
+    zIndex: 3,
   },
 })

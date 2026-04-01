@@ -52,32 +52,30 @@ export const ClipCard = memo(function ClipCard({
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={handlePressUser}
-          style={styles.userInfo}
-          activeOpacity={0.7}
-        >
-          <Avatar uri={clip.user.avatar_url} size={32} />
-          <Text style={styles.username}>@{clip.user.username}</Text>
-        </TouchableOpacity>
-        {clip.facility_tag && (
-          <Text style={styles.facility} numberOfLines={1}>
-            {clip.facility_tag}
-          </Text>
-        )}
-      </View>
-
-      {/* Video - full width */}
-      <TouchableOpacity onPress={handlePressClip} activeOpacity={1}>
+      {/* Video with overlaid user info */}
+      <View>
         <ClipPlayer
           videoUri={clip.video_url}
           thumbnailUri={clip.thumbnail_url}
           isVisible={isVisible}
           mode={playerMode}
         />
-      </TouchableOpacity>
+        <View style={styles.overlay} pointerEvents="box-none">
+          <TouchableOpacity
+            onPress={handlePressUser}
+            style={styles.userInfo}
+            activeOpacity={0.7}
+          >
+            <Avatar uri={clip.user.avatar_url} size={28} />
+            <Text style={styles.username}>@{clip.user.username}</Text>
+          </TouchableOpacity>
+          {clip.facility_tag && (
+            <Text style={styles.facility} numberOfLines={1}>
+              {clip.facility_tag}
+            </Text>
+          )}
+        </View>
+      </View>
 
       {/* Tags */}
       <View style={styles.tagsRow}>
@@ -118,12 +116,17 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.background,
   },
-  header: {
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
+    backgroundColor: 'rgba(0,0,0,0.35)',
   },
   userInfo: {
     flexDirection: 'row',
@@ -134,9 +137,11 @@ const styles = StyleSheet.create({
   username: {
     ...typography.bodySmall,
     fontWeight: '600',
+    color: colors.white,
   },
   facility: {
     ...typography.sub,
+    color: 'rgba(255,255,255,0.8)',
     maxWidth: 120,
   },
   tagsRow: {

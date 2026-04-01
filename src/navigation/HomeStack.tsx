@@ -1,4 +1,5 @@
 import React from 'react'
+import { Image } from 'react-native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { useTranslation } from 'react-i18next'
 import type { HomeStackParamList } from '@/types/navigation'
@@ -9,6 +10,16 @@ import { UserProfileScreen } from '@/screens/home/UserProfileScreen'
 import { colors } from '@/constants/colors'
 
 const Stack = createNativeStackNavigator<HomeStackParamList>()
+
+function HeaderLogo() {
+  return (
+    <Image
+      source={require('../../assets/logo-header.png')}
+      style={{ width: 100, height: 28 }}
+      resizeMode="contain"
+    />
+  )
+}
 
 export function HomeStack() {
   const { t } = useTranslation()
@@ -24,7 +35,10 @@ export function HomeStack() {
       <Stack.Screen
         name="Feed"
         component={FeedScreen}
-        options={{ title: t('feed.title') }}
+        options={{
+          headerTitle: '',
+          headerLeft: () => <HeaderLogo />,
+        }}
       />
       <Stack.Screen
         name="ClipDetail"
